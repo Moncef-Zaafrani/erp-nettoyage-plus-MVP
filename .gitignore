@@ -3,6 +3,3 @@
 
 # Except the backend folder
 !backend/
-
-# Allow .gitignore
-!.gitignore
