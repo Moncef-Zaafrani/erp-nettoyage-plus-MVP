@@ -205,8 +205,163 @@ export const authApi = {
   },
 }
 
+// ============================================
+// Notifications API Endpoints
+// ============================================
+
+export interface Notification {
+  id: string
+  type: 'info' | 'success' | 'warning' | 'error'
+  title: string
+  message?: string
+  read: boolean
+  actionUrl?: string
+  createdAt: string
+}
+
+export const notificationsApi = {
+  /**
+   * Get all notifications
+   */
+  getAll: async (): Promise<Notification[]> => {
+    return request<Notification[]>('/notifications')
+  },
+
+  /**
+   * Get recent notifications
+   */
+  getRecent: async (limit = 20): Promise<Notification[]> => {
+    return request<Notification[]>(`/notifications/recent?limit=${limit}`)
+  },
+
+  /**
+   * Get unread count
+   */
+  getUnreadCount: async (): Promise<{ count: number }> => {
+    return request<{ count: number }>('/notifications/unread-count')
+  },
+
+  /**
+   * Mark notification as read
+   */
+  markAsRead: async (id: string): Promise<Notification> => {
+    return request<Notification>(`/notifications/${id}/read`, {
+      method: 'PATCH',
+    })
+  },
+
+  /**
+   * Mark many notifications as read
+   */
+  markManyAsRead: async (ids?: string[]): Promise<{ success: boolean }> => {
+    return request<{ success: boolean }>('/notifications/mark-read', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  },
+
+  /**
+   * Delete notification
+   */
+  delete: async (id: string): Promise<{ success: boolean }> => {
+    return request<{ success: boolean }>(`/notifications/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Delete all notifications
+   */
+  deleteAll: async (): Promise<{ success: boolean }> => {
+    return request<{ success: boolean }>('/notifications', {
+      method: 'DELETE',
+    })
+  },
+}
+
+// ============================================
+// Attendance API Endpoints
+// ============================================
+
+export interface Attendance {
+  id: string
+  userId: string
+  clockIn: string
+  clockOut?: string
+  hoursWorked?: number
+  notes?: string
+  createdAt: string
+}
+
+export interface ShiftStatus {
+  isOnShift: boolean
+  currentShift: Attendance | null
+}
+
+export interface ClockInOutRequest {
+  notes?: string
+  latitude?: number
+  longitude?: number
+}
+
+export const attendanceApi = {
+  /**
+   * Get shift status
+   */
+  getStatus: async (): Promise<ShiftStatus> => {
+    return request<ShiftStatus>('/attendance/status')
+  },
+
+  /**
+   * Clock in
+   */
+  clockIn: async (data: ClockInOutRequest = {}): Promise<Attendance> => {
+    return request<Attendance>('/attendance/clock-in', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Clock out
+   */
+  clockOut: async (data: ClockInOutRequest = {}): Promise<Attendance> => {
+    return request<Attendance>('/attendance/clock-out', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Get today's attendance
+   */
+  getToday: async (): Promise<Attendance[]> => {
+    return request<Attendance[]>('/attendance/today')
+  },
+
+  /**
+   * Get attendance history
+   */
+  getHistory: async (startDate?: string, endDate?: string): Promise<Attendance[]> => {
+    const params = new URLSearchParams()
+    if (startDate) params.append('startDate', startDate)
+    if (endDate) params.append('endDate', endDate)
+    const query = params.toString()
+    return request<Attendance[]>(`/attendance/history${query ? `?${query}` : ''}`)
+  },
+
+  /**
+   * Get weekly hours
+   */
+  getWeeklyHours: async (): Promise<{ hours: number }> => {
+    return request<{ hours: number }>('/attendance/weekly-hours')
+  },
+}
+
 export default {
   auth: authApi,
+  notifications: notificationsApi,
+  attendance: attendanceApi,
   getToken,
   setToken,
   clearAuth,

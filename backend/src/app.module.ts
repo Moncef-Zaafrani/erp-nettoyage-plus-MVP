@@ -19,6 +19,8 @@ import { AbsencesModule } from './modules/absences/absences.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EmailModule } from './modules/email/email.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 import { JwtAuthGuard } from './common/guards';
 
 @Module({
@@ -45,6 +47,8 @@ import { JwtAuthGuard } from './common/guards';
     DashboardModule,
     EmailModule,
     AuditModule,
+    NotificationsModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [
