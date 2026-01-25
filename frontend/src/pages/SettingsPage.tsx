@@ -13,6 +13,7 @@ import {
   LogOut,
   RotateCcw,
   Check,
+  Construction,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { settingsApi, UserSettings, ThemeType, UserSession } from '@/services/api'
@@ -23,37 +24,51 @@ import Button from '@/components/ui/Button'
 // Theme Card Component
 // ============================================
 
-const THEMES: { id: ThemeType; name: string; description: string; preview: { bg: string; accent: string } }[] = [
+const THEMES: { id: ThemeType; name: string; description: string; preview: { bg: string; accent: string }; isWip?: boolean }[] = [
   { id: 'system', name: 'System Default', description: 'Follows OS preference', preview: { bg: 'bg-gradient-to-br from-gray-100 to-gray-900', accent: 'bg-blue-500' } },
   { id: 'light', name: 'Light Classic', description: 'Clean white background', preview: { bg: 'bg-white', accent: 'bg-blue-500' } },
   { id: 'dark', name: 'Dark Mode', description: 'Easy on the eyes', preview: { bg: 'bg-gray-900', accent: 'bg-blue-500' } },
-  { id: 'ocean-blue', name: 'Ocean Blue', description: 'Deep blue tones', preview: { bg: 'bg-blue-900', accent: 'bg-cyan-400' } },
-  { id: 'forest-green', name: 'Forest Green', description: 'Calming green accents', preview: { bg: 'bg-green-900', accent: 'bg-emerald-400' } },
-  { id: 'sunset-orange', name: 'Sunset Orange', description: 'Warm orange tones', preview: { bg: 'bg-orange-900', accent: 'bg-orange-400' } },
-  { id: 'high-contrast', name: 'High Contrast', description: 'Maximum readability', preview: { bg: 'bg-black', accent: 'bg-yellow-400' } },
-  { id: 'minimal-gray', name: 'Minimal Gray', description: 'Distraction-free', preview: { bg: 'bg-gray-800', accent: 'bg-gray-400' } },
-  { id: 'nettoyage-brand', name: 'Nettoyage Plus', description: 'Company colors', preview: { bg: 'bg-primary-900', accent: 'bg-primary-400' } },
+  { id: 'ocean-blue', name: 'Ocean Blue', description: 'Deep blue tones', preview: { bg: 'bg-blue-900', accent: 'bg-cyan-400' }, isWip: true },
+  { id: 'forest-green', name: 'Forest Green', description: 'Calming green accents', preview: { bg: 'bg-green-900', accent: 'bg-emerald-400' }, isWip: true },
+  { id: 'sunset-orange', name: 'Sunset Orange', description: 'Warm orange tones', preview: { bg: 'bg-orange-900', accent: 'bg-orange-400' }, isWip: true },
+  { id: 'high-contrast', name: 'High Contrast', description: 'Maximum readability', preview: { bg: 'bg-black', accent: 'bg-yellow-400' }, isWip: true },
+  { id: 'minimal-gray', name: 'Minimal Gray', description: 'Distraction-free', preview: { bg: 'bg-gray-800', accent: 'bg-gray-400' }, isWip: true },
+  { id: 'nettoyage-brand', name: 'Nettoyage Plus', description: 'Company colors', preview: { bg: 'bg-primary-900', accent: 'bg-primary-400' }, isWip: true },
 ]
 
 function ThemeCard({
   theme,
   isSelected,
   onClick,
+  disabled,
 }: {
   theme: typeof THEMES[0]
   isSelected: boolean
   onClick: () => void
+  disabled?: boolean
 }) {
   return (
     <button
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
       className={cn(
-        'relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all hover:shadow-md',
+        'relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all',
+        disabled
+          ? 'cursor-not-allowed opacity-60'
+          : 'hover:shadow-md',
         isSelected
           ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
           : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600'
       )}
     >
+      {/* WIP Badge */}
+      {theme.isWip && (
+        <div className="absolute -left-1 -top-1 flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+          <Construction className="h-3 w-3" />
+          WIP
+        </div>
+      )}
+      
       {/* Preview */}
       <div className={cn('h-16 w-full rounded-lg shadow-inner', theme.preview.bg)}>
         <div className="flex h-full items-center justify-center gap-1 p-2">
@@ -86,12 +101,14 @@ function SettingsSection({
   icon: Icon,
   children,
   id,
+  isWip,
 }: {
   title: string
   description?: string
   icon: React.ElementType
   children: React.ReactNode
   id?: string
+  isWip?: boolean
 }) {
   return (
     <section id={id} className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
@@ -100,15 +117,23 @@ function SettingsSection({
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
             <Icon className="h-5 w-5" />
           </div>
-          <div>
-            <h2 className="font-semibold text-gray-900 dark:text-white">{title}</h2>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-gray-900 dark:text-white">{title}</h2>
+              {isWip && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <Construction className="h-3 w-3" />
+                  Coming Soon
+                </span>
+              )}
+            </div>
             {description && (
               <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
             )}
           </div>
         </div>
       </div>
-      <div className="p-4 sm:p-6">{children}</div>
+      <div className={cn('p-4 sm:p-6', isWip && 'pointer-events-none opacity-50')}>{children}</div>
     </section>
   )
 }
@@ -413,26 +438,17 @@ export default function SettingsPage() {
   }
   
   async function handleThemeChange(themeId: ThemeType) {
-    // Update local theme immediately for responsive feel
-    if (themeId === 'system') {
-      setTheme('system')
-    } else if (themeId === 'dark' || themeId === 'ocean-blue' || themeId === 'forest-green' || themeId === 'high-contrast' || themeId === 'minimal-gray' || themeId === 'nettoyage-brand') {
-      setTheme('dark')
-    } else {
-      setTheme('light')
-    }
-    
-    // Save to backend
-    try {
-      await settingsApi.updateTheme(themeId)
+    // Only handle the 3 working themes (others are WIP and disabled)
+    if (themeId === 'system' || themeId === 'light' || themeId === 'dark') {
+      setTheme(themeId)
+      
+      // Update local settings state
       if (settings) {
         setSettings({
           ...settings,
           appearance: { ...settings.appearance, theme: themeId },
         })
       }
-    } catch (err) {
-      console.error('Failed to save theme:', err)
     }
   }
   
@@ -510,13 +526,22 @@ export default function SettingsPage() {
                       theme={theme}
                       isSelected={settings.appearance.theme === theme.id}
                       onClick={() => handleThemeChange(theme.id)}
+                      disabled={theme.isWip}
                     />
                   ))}
                 </div>
               </div>
               
-              {/* Other Appearance Options */}
+              {/* Other Appearance Options - WIP */}
               <div className="border-t border-gray-200 pt-6 dark:border-gray-700">
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    <Construction className="h-3 w-3" />
+                    Coming Soon
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">These options are not yet functional</span>
+                </div>
+                <div className="pointer-events-none opacity-50">
                 <Toggle
                   enabled={settings.appearance.compactMode}
                   onChange={(v) => updateSettings({ appearance: { ...settings.appearance, compactMode: v } })}
@@ -548,6 +573,7 @@ export default function SettingsPage() {
                   ]}
                   label={t('settings.appearance.sidebarPosition', 'Sidebar Position')}
                 />
+                </div>
               </div>
             </div>
           </SettingsSection>
@@ -558,6 +584,7 @@ export default function SettingsPage() {
             title={t('settings.notifications.title', 'Notifications')}
             description={t('settings.notifications.description', 'Manage how you receive notifications')}
             icon={Bell}
+            isWip
           >
             <div className="space-y-4">
               <Toggle
@@ -654,6 +681,7 @@ export default function SettingsPage() {
             title={t('settings.tables.title', 'Table Preferences')}
             description={t('settings.tables.description', 'Customize how data tables are displayed')}
             icon={Table}
+            isWip
           >
             <div className="space-y-4">
               <Select
@@ -693,6 +721,7 @@ export default function SettingsPage() {
             title={t('settings.calendar.title', 'Calendar')}
             description={t('settings.calendar.description', 'Configure calendar display preferences')}
             icon={Calendar}
+            isWip
           >
             <div className="space-y-4">
               <Select
@@ -742,6 +771,7 @@ export default function SettingsPage() {
             title={t('settings.security.title', 'Security & Sessions')}
             description={t('settings.security.description', 'Manage your account security and active sessions')}
             icon={Shield}
+            isWip
           >
             <div className="space-y-6">
               {/* Active Sessions */}
@@ -781,6 +811,7 @@ export default function SettingsPage() {
             title={t('settings.help.title', 'Help & Support')}
             description={t('settings.help.description', 'Get help and customize in-app guidance')}
             icon={HelpCircle}
+            isWip
           >
             <div className="space-y-4">
               <Toggle
