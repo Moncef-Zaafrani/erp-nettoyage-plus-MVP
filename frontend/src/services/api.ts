@@ -358,10 +358,365 @@ export const attendanceApi = {
   },
 }
 
+// ============================================
+// Profile Types
+// ============================================
+
+export interface EmergencyContact {
+  name: string
+  relationship: 'spouse' | 'parent' | 'sibling' | 'friend' | 'other'
+  phone: string
+  secondaryPhone?: string
+  notes?: string
+}
+
+export interface Certification {
+  id: string
+  name: string
+  issuingAuthority: string
+  issueDate: string
+  expiryDate?: string
+  documentUrl?: string
+  status: 'valid' | 'expiring_soon' | 'expired'
+}
+
+export interface LanguageSkill {
+  language: string
+  proficiency: 'basic' | 'intermediate' | 'fluent' | 'native'
+}
+
+export interface EquipmentCompetency {
+  equipment: string
+  certified: boolean
+  certifiedDate?: string
+}
+
+export interface WorkPreferences {
+  preferredHours?: { start: string; end: string }
+  daysAvailable?: string[]
+  maxTravelDistanceKm?: number
+  preferredZones?: string[]
+  preferredSiteTypes?: string[]
+  sitesToAvoid?: { siteId: string; reason: string }[]
+  preferRecurring?: boolean
+}
+
+export interface ProfileCompletion {
+  hasPhoto: boolean
+  hasPhone: boolean
+  hasEmergencyContact: boolean
+  hasCertifications: boolean
+  percentage: number
+}
+
+export interface UserProfile {
+  id: string
+  email: string
+  firstName?: string
+  lastName?: string
+  displayName?: string
+  phone?: string
+  secondaryPhone?: string
+  role: string
+  status: string
+  profilePhotoUrl?: string
+  personalEmail?: string
+  dateOfBirth?: string
+  nationalId?: string
+  address?: string
+  city?: string
+  region?: string
+  emergencyContact?: EmergencyContact
+  employeeId?: string
+  hireDate?: string
+  contractType?: 'CDI' | 'CDD' | 'FREELANCE'
+  certifications: Certification[]
+  languages: LanguageSkill[]
+  equipmentCompetencies: EquipmentCompetency[]
+  specialSkills?: string[]
+  workPreferences?: WorkPreferences
+  createdAt: string
+  updatedAt: string
+}
+
+export interface UpdateProfileRequest {
+  firstName?: string
+  lastName?: string
+  displayName?: string
+  phone?: string
+  secondaryPhone?: string
+  personalEmail?: string
+  dateOfBirth?: string
+  nationalId?: string
+  address?: string
+  city?: string
+  region?: string
+  emergencyContact?: EmergencyContact
+  certifications?: Certification[]
+  languages?: LanguageSkill[]
+  equipmentCompetencies?: EquipmentCompetency[]
+  specialSkills?: string[]
+  workPreferences?: WorkPreferences
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
+export const profileApi = {
+  /**
+   * Get current user's profile
+   */
+  getProfile: async (): Promise<{ profile: UserProfile; completion: ProfileCompletion }> => {
+    return request<{ profile: UserProfile; completion: ProfileCompletion }>('/me/profile')
+  },
+
+  /**
+   * Update profile
+   */
+  updateProfile: async (data: UpdateProfileRequest): Promise<{ profile: UserProfile; completion: ProfileCompletion }> => {
+    return request<{ profile: UserProfile; completion: ProfileCompletion }>('/me/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Update profile photo
+   */
+  updatePhoto: async (photoUrl: string): Promise<UserProfile> => {
+    return request<UserProfile>('/me/profile/photo', {
+      method: 'PATCH',
+      body: JSON.stringify({ profilePhotoUrl: photoUrl }),
+    })
+  },
+
+  /**
+   * Remove profile photo
+   */
+  removePhoto: async (): Promise<UserProfile> => {
+    return request<UserProfile>('/me/profile/photo', {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Change password
+   */
+  changePassword: async (data: ChangePasswordRequest): Promise<MessageResponse> => {
+    return request<MessageResponse>('/me/profile/password', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
+// ============================================
+// Settings Types
+// ============================================
+
+export type ThemeType =
+  | 'system'
+  | 'light'
+  | 'dark'
+  | 'ocean-blue'
+  | 'forest-green'
+  | 'sunset-orange'
+  | 'high-contrast'
+  | 'minimal-gray'
+  | 'nettoyage-brand'
+
+export interface AppearanceSettings {
+  theme: ThemeType
+  sidebarCollapsed: boolean
+  sidebarPosition: 'left' | 'right'
+  animationsEnabled: boolean
+  fontSize: 'small' | 'medium' | 'large'
+  compactMode: boolean
+}
+
+export interface NotificationSettings {
+  inAppEnabled: boolean
+  soundEnabled: boolean
+  desktopEnabled: boolean
+  emailDigest: 'instant' | 'daily' | 'weekly' | 'none'
+  emailCategories: {
+    newMissions: boolean
+    missionChanges: boolean
+    scheduleReminders: boolean
+    qualityResults: boolean
+    absenceUpdates: boolean
+    systemAnnouncements: boolean
+    weeklyPerformance: boolean
+  }
+  pushEnabled: boolean
+  quietHours: {
+    enabled: boolean
+    start: string
+    end: string
+  }
+}
+
+export interface TableSettings {
+  defaultRowsPerPage: 10 | 25 | 50 | 100
+  compactRows: boolean
+  showRowNumbers: boolean
+  stickyHeader: boolean
+  columnPreferences: Record<string, string[]>
+  sortPreferences: Record<string, { field: string; direction: 'asc' | 'desc' }>
+}
+
+export interface CalendarSettings {
+  defaultView: 'day' | 'week' | 'month'
+  weekStartsOn: 'sunday' | 'monday'
+  showWeekends: boolean
+  timeFormat: '12h' | '24h'
+  showCompleted: boolean
+}
+
+export interface UserSettings {
+  id: string
+  userId: string
+  appearance: AppearanceSettings
+  notifications: NotificationSettings
+  tables: TableSettings
+  calendar: CalendarSettings
+  map: {
+    defaultView: 'satellite' | 'street' | 'hybrid'
+    showAgentLocations: boolean
+    showTraffic: boolean
+    clusterSites: boolean
+  }
+  gps: {
+    enabled: boolean
+    accuracy: 'high' | 'balanced' | 'low'
+  }
+  photo: {
+    defaultCamera: 'front' | 'back'
+    quality: 'low' | 'medium' | 'high' | 'original'
+    autoCompress: boolean
+    timestampOverlay: boolean
+    locationOverlay: boolean
+  }
+  offline: {
+    enabled: boolean
+    autoSync: boolean
+    maxStorageMb: 50 | 100 | 500
+  }
+  mission: {
+    showNotesFirst: boolean
+    expandChecklists: boolean
+    defaultSort: 'time' | 'site' | 'priority'
+  }
+  shift: {
+    reminderBefore: number
+    missedClockInReminder: number
+    endShiftReminder: number
+    autoClockOutHours: number
+    notifySupervisorAutoClockOut: boolean
+    defaultBreakMinutes: number
+    breakReminderHours: number
+  }
+  help: {
+    showEmptyStateTips: boolean
+    showFeatureTutorials: boolean
+  }
+}
+
+export interface UserSession {
+  id: string
+  deviceType?: 'desktop' | 'mobile' | 'tablet'
+  browser?: string
+  os?: string
+  ipAddress?: string
+  city?: string
+  country?: string
+  isActive: boolean
+  lastActiveAt?: string
+  createdAt: string
+  isCurrent?: boolean
+}
+
+export const settingsApi = {
+  /**
+   * Get user settings
+   */
+  getSettings: async (): Promise<UserSettings> => {
+    return request<UserSettings>('/me/settings')
+  },
+
+  /**
+   * Update settings (deep merge)
+   */
+  updateSettings: async (data: Partial<UserSettings>): Promise<UserSettings> => {
+    return request<UserSettings>('/me/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Update theme only
+   */
+  updateTheme: async (theme: ThemeType): Promise<UserSettings> => {
+    return request<UserSettings>('/me/settings/theme', {
+      method: 'PATCH',
+      body: JSON.stringify({ theme }),
+    })
+  },
+
+  /**
+   * Reset settings to defaults
+   */
+  resetSettings: async (): Promise<UserSettings> => {
+    return request<UserSettings>('/me/settings/reset', {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Get active sessions
+   */
+  getSessions: async (): Promise<UserSession[]> => {
+    return request<UserSession[]>('/me/settings/sessions')
+  },
+
+  /**
+   * Revoke a specific session
+   */
+  revokeSession: async (sessionId: string): Promise<MessageResponse> => {
+    return request<MessageResponse>(`/me/settings/sessions/${sessionId}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Revoke all other sessions
+   */
+  revokeOtherSessions: async (): Promise<MessageResponse> => {
+    return request<MessageResponse>('/me/settings/sessions/revoke-others', {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Revoke all sessions
+   */
+  revokeAllSessions: async (): Promise<MessageResponse> => {
+    return request<MessageResponse>('/me/settings/sessions/revoke-all', {
+      method: 'POST',
+    })
+  },
+}
+
 export default {
   auth: authApi,
   notifications: notificationsApi,
   attendance: attendanceApi,
+  profile: profileApi,
+  settings: settingsApi,
   getToken,
   setToken,
   clearAuth,

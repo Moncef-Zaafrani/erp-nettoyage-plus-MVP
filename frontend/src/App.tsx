@@ -3,6 +3,8 @@ import LoginPage from './pages/auth/LoginPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import DashboardPage from './pages/DashboardPage'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
 import { MainLayout } from './components/layout/MainLayout'
 import { useAuth } from './contexts/AuthContext'
 
@@ -53,6 +55,8 @@ export default function App() {
       {/* Protected Routes with MainLayout */}
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         
         {/* Placeholder routes - will be implemented in future phases */}
         <Route path="/users/*" element={<ComingSoonPage title="User Management" />} />
@@ -62,8 +66,6 @@ export default function App() {
         <Route path="/planning" element={<ComingSoonPage title="Planning" />} />
         <Route path="/personnel" element={<ComingSoonPage title="Personnel" />} />
         <Route path="/notifications" element={<ComingSoonPage title="Notifications" />} />
-        <Route path="/settings" element={<ComingSoonPage title="Settings" />} />
-        <Route path="/profile" element={<ComingSoonPage title="My Profile" />} />
         <Route path="/my-agents" element={<ComingSoonPage title="Your Agents" />} />
         <Route path="/my-missions" element={<ComingSoonPage title="My Missions" />} />
         <Route path="/my-schedule" element={<ComingSoonPage title="My Schedule" />} />

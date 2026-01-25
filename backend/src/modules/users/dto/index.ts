@@ -7,3 +7,32 @@ export {
   BatchUpdateItem,
   BatchIdsDto,
 } from './batch-operations.dto';
+
+// Profile DTOs
+export {
+  UpdateProfileDto,
+  UpdateProfilePhotoDto,
+  ChangePasswordDto,
+  EmergencyContactDto,
+  CertificationDto,
+  LanguageSkillDto,
+  EquipmentCompetencyDto,
+  WorkPreferencesDto,
+} from './profile.dto';
+
+// Settings DTOs
+export {
+  UpdateSettingsDto,
+  UpdateThemeDto,
+  AppearanceSettingsDto,
+  NotificationSettingsDto,
+  TableSettingsDto,
+  CalendarSettingsDto,
+  MapSettingsDto,
+  GpsSettingsDto,
+  PhotoSettingsDto,
+  OfflineSettingsDto,
+  MissionSettingsDto,
+  ShiftSettingsDto,
+  HelpSettingsDto,
+} from './settings.dto';
