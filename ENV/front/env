@@ -1,3 +1,0 @@
-# API URL - Default to localhost for development
-# Override in .env.local or .env.production for other environments
-VITE_API_URL=http://localhost:3000/api

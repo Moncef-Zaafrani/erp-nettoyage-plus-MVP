@@ -1,9 +1,0 @@
-# Ignore everything
-*
-
-# Allow only the backend folder
-!backend/
-!frontend/
-
-# Ignore the .gitignore file itself
-.gitignore.hidden
