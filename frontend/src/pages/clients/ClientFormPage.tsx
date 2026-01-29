@@ -38,7 +38,7 @@ export function ClientFormPage() {
   const [formData, setFormData] = useState({
     name: '',
     type: 'COMPANY' as ClientType,
-    status: 'PROSPECT',
+    status: 'CURRENT',
     email: '',
     phone: '',
     address: '',

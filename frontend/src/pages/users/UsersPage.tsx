@@ -68,7 +68,7 @@ export function UsersPage() {
   
   // Filters
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({
-    status: ['ACTIVE'], // Default to showing active users
+    status: [], // Start with no filter - show all users
     role: [],
     lastOnline: [],
   })
@@ -157,6 +157,9 @@ export function UsersPage() {
       })
 
       let filteredUsers = response.data || []
+      
+      // Always exclude CLIENTs from users list (they appear in Clients section)
+      filteredUsers = filteredUsers.filter(u => u.role !== 'CLIENT')
       
       // Client-side filter for multiple roles (when tab specifies multiple like SUPER_ADMIN,ADMIN)
       if (currentRoleFilter && currentRoleFilter.length > 1) {

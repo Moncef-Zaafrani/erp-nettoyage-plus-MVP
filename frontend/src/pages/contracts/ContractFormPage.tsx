@@ -181,7 +181,7 @@ export function ContractFormPage() {
     async function fetchClients() {
       try {
         setClientsLoading(true)
-        const response = await clientsApi.getAll({ limit: 200, status: 'CURRENT' })
+        const response = await clientsApi.getAll({ limit: 200 })
         setClients(response.data || [])
       } catch (err) {
         console.error('Failed to fetch clients:', err)

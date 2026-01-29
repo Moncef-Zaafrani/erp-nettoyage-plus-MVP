@@ -26,7 +26,12 @@ import AbsenceRequestPage from './pages/agent/AbsenceRequestPage'
 // Personnel/HR pages
 import AbsencesPage from './pages/personnel/AbsencesPage'
 import { MainLayout } from './components/layout/MainLayout'
-import { useAuth } from './contexts/AuthContext'
+import { useAuth, UserRole } from './contexts/AuthContext'
+
+// Role groups for access control
+const ADMIN_ROLES: UserRole[] = ['SUPER_ADMIN', 'ADMIN']
+const STAFF_ROLES: UserRole[] = ['SUPER_ADMIN', 'ADMIN', 'SUPERVISOR']
+const ALL_INTERNAL_ROLES: UserRole[] = ['SUPER_ADMIN', 'ADMIN', 'SUPERVISOR', 'AGENT']
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -41,6 +46,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+  
+  return <>{children}</>
+}
+
+// Role-based route protection
+function RoleRoute({ 
+  children, 
+  allowedRoles 
+}: { 
+  children: React.ReactNode
+  allowedRoles: UserRole[]
+}) {
+  const { user, isLoading } = useAuth()
+  
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-500 border-t-transparent" />
+      </div>
+    )
+  }
+  
+  if (!user || !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />
   }
   
   return <>{children}</>
@@ -77,60 +107,62 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports" element={<RoleRoute allowedRoles={STAFF_ROLES}><ReportsPage /></RoleRoute>} />
         
-        {/* Users Management */}
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/users/new" element={<UserFormPage />} />
-        <Route path="/users/:id/edit" element={<UserFormPage />} />
-        <Route path="/users/:roleFilter" element={<UsersPage />} />
-        <Route path="/users/view/:id" element={<UserDetailsPage />} />
+        {/* Users Management - Admin only */}
+        <Route path="/users" element={<RoleRoute allowedRoles={ADMIN_ROLES}><UsersPage /></RoleRoute>} />
+        <Route path="/users/new" element={<RoleRoute allowedRoles={ADMIN_ROLES}><UserFormPage /></RoleRoute>} />
+        <Route path="/users/:id/edit" element={<RoleRoute allowedRoles={ADMIN_ROLES}><UserFormPage /></RoleRoute>} />
+        <Route path="/users/:roleFilter" element={<RoleRoute allowedRoles={ADMIN_ROLES}><UsersPage /></RoleRoute>} />
+        <Route path="/users/view/:id" element={<RoleRoute allowedRoles={ADMIN_ROLES}><UserDetailsPage /></RoleRoute>} />
         
-        {/* Clients Management */}
-        <Route path="/clients" element={<ClientsPage />} />
-        <Route path="/clients/new" element={<ClientFormPage />} />
-        <Route path="/clients/:id/edit" element={<ClientFormPage />} />
-        <Route path="/clients/:typeFilter" element={<ClientsPage />} />
-        <Route path="/clients/view/:id" element={<ClientDetailsPage />} />
+        {/* Clients Management - Admin only */}
+        <Route path="/clients" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ClientsPage /></RoleRoute>} />
+        <Route path="/clients/new" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ClientFormPage /></RoleRoute>} />
+        <Route path="/clients/:id/edit" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ClientFormPage /></RoleRoute>} />
+        <Route path="/clients/:typeFilter" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ClientsPage /></RoleRoute>} />
+        <Route path="/clients/view/:id" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ClientDetailsPage /></RoleRoute>} />
         
-        {/* Sites Management */}
-        <Route path="/sites" element={<SitesPage />} />
-        <Route path="/sites/new" element={<SiteFormPage />} />
-        <Route path="/sites/:id/edit" element={<SiteFormPage />} />
-        <Route path="/sites/view/:id" element={<SiteDetailsPage />} />
+        {/* Sites Management - Staff */}
+        <Route path="/sites" element={<RoleRoute allowedRoles={STAFF_ROLES}><SitesPage /></RoleRoute>} />
+        <Route path="/sites/new" element={<RoleRoute allowedRoles={ADMIN_ROLES}><SiteFormPage /></RoleRoute>} />
+        <Route path="/sites/:id/edit" element={<RoleRoute allowedRoles={ADMIN_ROLES}><SiteFormPage /></RoleRoute>} />
+        <Route path="/sites/view/:id" element={<RoleRoute allowedRoles={STAFF_ROLES}><SiteDetailsPage /></RoleRoute>} />
         
-        {/* Contracts Management */}
-        <Route path="/contracts" element={<ContractsPage />} />
-        <Route path="/contracts/new" element={<ContractFormPage />} />
-        <Route path="/contracts/:id/edit" element={<ContractFormPage />} />
-        <Route path="/contracts/:typeFilter" element={<ContractsPage />} />
-        <Route path="/contracts/view/:id" element={<ContractDetailsPage />} />
+        {/* Contracts Management - Admin only */}
+        <Route path="/contracts" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ContractsPage /></RoleRoute>} />
+        <Route path="/contracts/new" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ContractFormPage /></RoleRoute>} />
+        <Route path="/contracts/:id/edit" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ContractFormPage /></RoleRoute>} />
+        <Route path="/contracts/:typeFilter" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ContractsPage /></RoleRoute>} />
+        <Route path="/contracts/view/:id" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ContractDetailsPage /></RoleRoute>} />
         
-        {/* Interventions / Planning */}
-        <Route path="/interventions" element={<InterventionsPage />} />
-        <Route path="/interventions/new" element={<InterventionFormPage />} />
-        <Route path="/interventions/:id/edit" element={<InterventionFormPage />} />
-        <Route path="/interventions/view/:id" element={<InterventionDetailsPage />} />
-        <Route path="/planning" element={<InterventionsPage />} />
+        {/* Interventions / Planning - Staff can view, Admin can edit */}
+        <Route path="/interventions" element={<RoleRoute allowedRoles={STAFF_ROLES}><InterventionsPage /></RoleRoute>} />
+        <Route path="/interventions/new" element={<RoleRoute allowedRoles={ADMIN_ROLES}><InterventionFormPage /></RoleRoute>} />
+        <Route path="/interventions/:id/edit" element={<RoleRoute allowedRoles={ADMIN_ROLES}><InterventionFormPage /></RoleRoute>} />
+        <Route path="/interventions/view/:id" element={<RoleRoute allowedRoles={STAFF_ROLES}><InterventionDetailsPage /></RoleRoute>} />
+        <Route path="/planning" element={<RoleRoute allowedRoles={STAFF_ROLES}><InterventionsPage /></RoleRoute>} />
         
-        {/* Agent Routes - My Missions */}
-        <Route path="/my-missions" element={<MyMissionsPage />} />
-        <Route path="/my-missions/:id" element={<MissionDetailPage />} />
-        <Route path="/absence-request" element={<AbsenceRequestPage />} />
+        {/* Agent Routes - My Missions (Agent and above) */}
+        <Route path="/my-missions" element={<RoleRoute allowedRoles={ALL_INTERNAL_ROLES}><MyMissionsPage /></RoleRoute>} />
+        <Route path="/my-missions/:id" element={<RoleRoute allowedRoles={ALL_INTERNAL_ROLES}><MissionDetailPage /></RoleRoute>} />
+        <Route path="/absence-request" element={<RoleRoute allowedRoles={ALL_INTERNAL_ROLES}><AbsenceRequestPage /></RoleRoute>} />
         
-        {/* Personnel / HR Routes */}
-        <Route path="/personnel/absences" element={<AbsencesPage />} />
-        <Route path="/personnel/absences/new" element={<AbsenceRequestPage />} />
-        <Route path="/personnel/absences/:id" element={<AbsenceRequestPage />} />
+        {/* Personnel / HR Routes - Admin only */}
+        <Route path="/personnel/absences" element={<RoleRoute allowedRoles={ADMIN_ROLES}><AbsencesPage /></RoleRoute>} />
+        <Route path="/personnel/absences/new" element={<RoleRoute allowedRoles={ADMIN_ROLES}><AbsenceRequestPage /></RoleRoute>} />
+        <Route path="/personnel/absences/:id" element={<RoleRoute allowedRoles={ADMIN_ROLES}><AbsenceRequestPage /></RoleRoute>} />
+        
+        {/* Supervisor Routes */}
+        <Route path="/my-agents" element={<RoleRoute allowedRoles={STAFF_ROLES}><UsersPage /></RoleRoute>} />
         
         {/* Placeholder routes - will be implemented in future phases */}
-        <Route path="/personnel" element={<ComingSoonPage title="Personnel" />} />
+        <Route path="/personnel" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ComingSoonPage title="Personnel" /></RoleRoute>} />
         <Route path="/notifications" element={<ComingSoonPage title="Notifications" />} />
-        <Route path="/my-agents" element={<ComingSoonPage title="Your Agents" />} />
-        <Route path="/my-schedule" element={<ComingSoonPage title="My Schedule" />} />
-        <Route path="/my-contracts" element={<ComingSoonPage title="My Contracts" />} />
-        <Route path="/my-sites" element={<ComingSoonPage title="My Sites" />} />
-        <Route path="/audit" element={<ComingSoonPage title="Audit Logs" />} />
+        <Route path="/my-schedule" element={<RoleRoute allowedRoles={ALL_INTERNAL_ROLES}><ComingSoonPage title="My Schedule" /></RoleRoute>} />
+        <Route path="/my-contracts" element={<RoleRoute allowedRoles={['CLIENT']}><ComingSoonPage title="My Contracts" /></RoleRoute>} />
+        <Route path="/my-sites" element={<RoleRoute allowedRoles={['CLIENT']}><ComingSoonPage title="My Sites" /></RoleRoute>} />
+        <Route path="/audit" element={<RoleRoute allowedRoles={ADMIN_ROLES}><ComingSoonPage title="Audit Logs" /></RoleRoute>} />
       </Route>
       
       {/* Default redirect */}
