@@ -67,7 +67,7 @@ export function ClientsPage() {
   
   // Filters
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({
-    status: ['CURRENT'], // Default to showing current clients
+    status: [], // Start with no filter - show all clients
     type: [],
     hasContracts: [],
   })
