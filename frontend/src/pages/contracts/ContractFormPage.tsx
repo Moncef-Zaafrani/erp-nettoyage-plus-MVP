@@ -459,10 +459,12 @@ export function ContractFormPage() {
             <div className="p-4 sm:p-6 space-y-4">
               {/* Client */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="contract-client" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('contracts.form.client', 'Client')} <span className="text-red-500">*</span>
                 </label>
                 <SearchableSelect
+                  id="contract-client"
+                  name="clientId"
                   options={clientOptions}
                   value={formData.clientId}
                   onChange={(value) => {
@@ -477,10 +479,12 @@ export function ContractFormPage() {
 
               {/* Site */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label htmlFor="contract-site" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('contracts.form.site', 'Site')} <span className="text-red-500">*</span>
                 </label>
                 <SearchableSelect
+                  id="contract-site"
+                  name="siteId"
                   options={siteOptions}
                   value={formData.siteId}
                   onChange={(value) => {
@@ -592,10 +596,12 @@ export function ContractFormPage() {
               {/* Frequency (for permanent contracts) */}
               {formData.type === 'PERMANENT' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="contract-frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('contracts.form.frequency', 'Frequency')} <span className="text-red-500">*</span>
                   </label>
                   <select
+                    id="contract-frequency"
+                    name="frequency"
                     value={formData.frequency || ''}
                     onChange={(e) => {
                       setFormData(prev => ({ ...prev, frequency: e.target.value as ContractFrequency }))
@@ -620,11 +626,13 @@ export function ContractFormPage() {
               {/* Date Range */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="contract-start-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('contracts.form.startDate', 'Start Date')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
+                    id="contract-start-date"
+                    name="startDate"
                     value={formData.startDate}
                     onChange={(e) => {
                       setFormData(prev => ({ ...prev, startDate: e.target.value }))
@@ -640,7 +648,7 @@ export function ContractFormPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="contract-end-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('contracts.form.endDate', 'End Date')}
                     {formData.type === 'ONE_TIME' && <span className="text-red-500"> *</span>}
                   </label>
