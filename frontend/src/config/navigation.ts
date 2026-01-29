@@ -11,7 +11,6 @@ import {
   Calendar,
   UsersRound,
   Bell,
-  Settings,
   ClipboardList,
   Shield,
   Briefcase,
