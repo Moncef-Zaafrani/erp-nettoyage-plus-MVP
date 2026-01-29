@@ -116,7 +116,7 @@ export function InterventionsPage() {
   useEffect(() => {
     const loadReferenceData = async () => {
       try {
-        const sitesData = await sitesApi.getAll({ limit: 1000 })
+        const sitesData = await sitesApi.getAll({ limit: 100 })
         setSites(Array.isArray(sitesData) ? sitesData : sitesData.data || [])
       } catch (err) {
         console.error('Failed to load reference data:', err)

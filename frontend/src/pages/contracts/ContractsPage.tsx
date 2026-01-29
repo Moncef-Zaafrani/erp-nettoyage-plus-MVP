@@ -162,7 +162,7 @@ export function ContractsPage() {
   useEffect(() => {
     async function fetchClients() {
       try {
-        const response = await clientsApi.getAll({ limit: 200, status: 'CURRENT' })
+        const response = await clientsApi.getAll({ limit: 100 })
         setClients(response.data || [])
       } catch (err) {
         console.error('Failed to fetch clients:', err)
@@ -175,7 +175,7 @@ export function ContractsPage() {
   useEffect(() => {
     async function fetchSites() {
       try {
-        const response = await sitesApi.getAll({ limit: 200, status: 'ACTIVE' })
+        const response = await sitesApi.getAll({ limit: 100 })
         setSites(response.data || [])
       } catch (err) {
         console.error('Failed to fetch sites:', err)

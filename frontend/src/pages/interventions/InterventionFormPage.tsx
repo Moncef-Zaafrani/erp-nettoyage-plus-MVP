@@ -85,7 +85,7 @@ export function InterventionFormPage() {
     const loadContracts = async () => {
       setContractsLoading(true)
       try {
-        const response = await contractsApi.getAll({ status: 'ACTIVE', limit: 1000 })
+        const response = await contractsApi.getAll({ status: 'ACTIVE', limit: 100 })
         setContracts(response.data || [])
       } catch (err) {
         console.error('Failed to load contracts:', err)
@@ -102,7 +102,7 @@ export function InterventionFormPage() {
       const selectedContract = contracts.find(c => c.id === formData.contractId)
       if (selectedContract?.clientId) {
         setSitesLoading(true)
-        sitesApi.getAll({ clientId: selectedContract.clientId, limit: 1000 })
+        sitesApi.getAll({ clientId: selectedContract.clientId, limit: 100 })
           .then(response => {
             setSites(Array.isArray(response) ? response : response.data || [])
           })
@@ -120,8 +120,8 @@ export function InterventionFormPage() {
       setAgentsLoading(true)
       try {
         const [agentsResponse, supervisorsResponse] = await Promise.all([
-          usersApi.getAll({ role: 'AGENT', status: 'ACTIVE', limit: 1000 }),
-          usersApi.getAll({ role: 'SUPERVISOR', status: 'ACTIVE', limit: 1000 }),
+          usersApi.getAll({ role: 'AGENT', status: 'ACTIVE', limit: 100 }),
+          usersApi.getAll({ role: 'SUPERVISOR', status: 'ACTIVE', limit: 100 }),
         ])
         setAgents(Array.isArray(agentsResponse) ? agentsResponse : agentsResponse.data || [])
         setSupervisors(Array.isArray(supervisorsResponse) ? supervisorsResponse : supervisorsResponse.data || [])
