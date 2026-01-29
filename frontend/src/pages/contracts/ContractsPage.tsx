@@ -83,7 +83,7 @@ export function ContractsPage() {
   
   // Filters
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({
-    status: ['ACTIVE'], // Default to showing active contracts
+    status: [],
     type: [],
     clientId: [],
   })

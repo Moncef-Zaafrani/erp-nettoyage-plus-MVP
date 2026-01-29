@@ -85,7 +85,7 @@ export function InterventionFormPage() {
     const loadContracts = async () => {
       setContractsLoading(true)
       try {
-        const response = await contractsApi.getAll({ status: 'ACTIVE', limit: 100 })
+        const response = await contractsApi.getAll({ limit: 100 })
         setContracts(response.data || [])
       } catch (err) {
         console.error('Failed to load contracts:', err)

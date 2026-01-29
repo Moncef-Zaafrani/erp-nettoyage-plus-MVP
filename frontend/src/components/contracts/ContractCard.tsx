@@ -223,7 +223,7 @@ export function ContractCard({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             {/* Contract Code */}
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="font-mono text-sm font-semibold text-indigo-600 dark:text-indigo-400">
                 {contract.contractCode}
               </span>
@@ -231,6 +231,11 @@ export function ContractCard({
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${typeInfo.bgColor} ${typeInfo.color}`}>
                 <TypeIcon className="h-3 w-3" />
                 {t(typeInfo.label)}
+              </span>
+              {/* Status Badge - visible in header */}
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.color}`}>
+                <StatusIcon className="h-3 w-3" />
+                {t(statusInfo.label)}
               </span>
             </div>
             

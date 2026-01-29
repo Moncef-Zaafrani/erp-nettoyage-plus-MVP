@@ -25,10 +25,10 @@ export class AbsencesController {
 
   /**
    * Create absence request
-   * Access: AGENT, TEAM_CHIEF (for themselves)
+   * Access: All internal staff (SUPER_ADMIN, ADMIN, SUPERVISOR, AGENT)
    */
   @Post()
-  @Roles(UserRole.AGENT, UserRole.SUPERVISOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPERVISOR, UserRole.AGENT)
   create(@Body() createAbsenceDto: CreateAbsenceDto) {
     return this.absencesService.create(createAbsenceDto);
   }
@@ -115,10 +115,10 @@ export class AbsencesController {
 
   /**
    * Update absence (only if PENDING)
-   * Access: Agent who requested it
+   * Access: Staff who requested it or admins
    */
   @Patch(':id')
-  @Roles(UserRole.AGENT, UserRole.SUPERVISOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPERVISOR, UserRole.AGENT)
   update(
     @Param('id') id: string,
     @Body() updateAbsenceDto: UpdateAbsenceDto,
@@ -129,11 +129,12 @@ export class AbsencesController {
 
   /**
    * Review absence (approve/reject)
-   * Access: ZONE_CHIEF and above
+   * Access: Supervisors and admins
    */
   @Post(':id/review')
   @Roles(
     UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
     UserRole.SUPERVISOR,
   )
   review(
@@ -145,21 +146,21 @@ export class AbsencesController {
   }
 
   /**
-   * Cancel absence (agent self-cancellation)
-   * Access: Agent who requested it
+   * Cancel absence (self-cancellation or admin)
+   * Access: Staff who requested it or admins
    */
   @Post(':id/cancel')
-  @Roles(UserRole.AGENT, UserRole.SUPERVISOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPERVISOR, UserRole.AGENT)
   cancel(@Param('id') id: string, @CurrentUser() user: any) {
     return this.absencesService.cancel(id, user.id);
   }
 
   /**
    * Delete absence (soft delete)
-   * Access: SUPER_ADMIN, DIRECTOR only
+   * Access: SUPER_ADMIN and ADMIN only
    */
   @Delete(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.absencesService.remove(id);
   }
