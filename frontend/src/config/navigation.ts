@@ -134,11 +134,7 @@ function getSuperAdminNav(): NavSection[] {
           label: 'Interventions',
           labelKey: 'nav.interventions',
           icon: Calendar,
-          children: [
-            { id: 'interventions-list', label: 'List', labelKey: 'nav.interventions.list', icon: ClipboardList, href: '/interventions' },
-            { id: 'interventions-planning', label: 'Planning', labelKey: 'nav.interventions.planning', icon: Calendar, href: '/planning' },
-            { id: 'interventions-calendar', label: 'Calendar', labelKey: 'nav.interventions.calendar', icon: Calendar, href: '/interventions/calendar', wip: true, wipPhase: 2 },
-          ],
+          href: '/interventions',
         },
         {
           id: 'personnel',
@@ -259,10 +255,7 @@ function getAdminNav(): NavSection[] {
           label: 'Interventions',
           labelKey: 'nav.interventions',
           icon: Calendar,
-          children: [
-            { id: 'interventions-list', label: 'List', labelKey: 'nav.interventions.list', icon: ClipboardList, href: '/interventions' },
-            { id: 'interventions-planning', label: 'Planning', labelKey: 'nav.interventions.planning', icon: Calendar, href: '/planning' },
-          ],
+          href: '/interventions',
         },
         {
           id: 'personnel',
