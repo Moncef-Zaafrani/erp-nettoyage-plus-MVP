@@ -46,8 +46,8 @@ export function MainLayout() {
     return !dismissed
   })
 
-  // Only agents and supervisors can toggle shift
-  const canToggleShift = user?.role === 'AGENT' || user?.role === 'SUPERVISOR'
+  // Agents, supervisors, and admins can toggle shift (not super_admin or client)
+  const canToggleShift = user?.role === 'AGENT' || user?.role === 'SUPERVISOR' || user?.role === 'ADMIN'
 
   // Load notifications from backend
   useEffect(() => {
@@ -82,6 +82,21 @@ export function MainLayout() {
       }
     }
     loadShiftStatus()
+  }, [canToggleShift])
+
+  // Listen for shift status changes from other components (ShiftStatusCard)
+  useEffect(() => {
+    const handleShiftChange = async () => {
+      if (!canToggleShift) return
+      try {
+        const status = await attendanceApi.getStatus()
+        setIsOnShift(status.isOnShift)
+      } catch (error) {
+        console.error('Failed to reload shift status:', error)
+      }
+    }
+    window.addEventListener('shiftStatusChanged', handleShiftChange)
+    return () => window.removeEventListener('shiftStatusChanged', handleShiftChange)
   }, [canToggleShift])
 
   // Save sidebar state
@@ -125,6 +140,8 @@ export function MainLayout() {
         await attendanceApi.clockIn({})
         setIsOnShift(true)
       }
+      // Dispatch custom event so dashboard can refresh
+      window.dispatchEvent(new CustomEvent('shiftStatusChanged'))
     } catch (error) {
       console.error('Failed to toggle shift:', error)
       // Show error to user (could use a toast notification)

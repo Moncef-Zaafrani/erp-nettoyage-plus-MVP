@@ -5,6 +5,26 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
+import ReportsPage from './pages/ReportsPage'
+import UsersPage from './pages/users/UsersPage'
+import UserDetailsPage from './pages/users/UserDetailsPage'
+import UserFormPage from './pages/users/UserFormPage'
+import ClientsPage from './pages/clients/ClientsPage'
+import ClientDetailsPage from './pages/clients/ClientDetailsPage'
+import ClientFormPage from './pages/clients/ClientFormPage'
+import SitesPage from './pages/sites/SitesPage'
+import SiteDetailsPage from './pages/sites/SiteDetailsPage'
+import SiteFormPage from './pages/sites/SiteFormPage'
+import ContractsPage from './pages/contracts/ContractsPage'
+import ContractDetailsPage from './pages/contracts/ContractDetailsPage'
+import ContractFormPage from './pages/contracts/ContractFormPage'
+import { InterventionsPage, InterventionFormPage, InterventionDetailsPage } from './pages/interventions'
+// Agent pages
+import MyMissionsPage from './pages/agent/MyMissionsPage'
+import MissionDetailPage from './pages/agent/MissionDetailPage'
+import AbsenceRequestPage from './pages/agent/AbsenceRequestPage'
+// Personnel/HR pages
+import AbsencesPage from './pages/personnel/AbsencesPage'
 import { MainLayout } from './components/layout/MainLayout'
 import { useAuth } from './contexts/AuthContext'
 
@@ -57,17 +77,56 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        
+        {/* Users Management */}
+        <Route path="/users" element={<UsersPage />} />
+        <Route path="/users/new" element={<UserFormPage />} />
+        <Route path="/users/:id/edit" element={<UserFormPage />} />
+        <Route path="/users/:roleFilter" element={<UsersPage />} />
+        <Route path="/users/view/:id" element={<UserDetailsPage />} />
+        
+        {/* Clients Management */}
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/clients/new" element={<ClientFormPage />} />
+        <Route path="/clients/:id/edit" element={<ClientFormPage />} />
+        <Route path="/clients/:typeFilter" element={<ClientsPage />} />
+        <Route path="/clients/view/:id" element={<ClientDetailsPage />} />
+        
+        {/* Sites Management */}
+        <Route path="/sites" element={<SitesPage />} />
+        <Route path="/sites/new" element={<SiteFormPage />} />
+        <Route path="/sites/:id/edit" element={<SiteFormPage />} />
+        <Route path="/sites/view/:id" element={<SiteDetailsPage />} />
+        
+        {/* Contracts Management */}
+        <Route path="/contracts" element={<ContractsPage />} />
+        <Route path="/contracts/new" element={<ContractFormPage />} />
+        <Route path="/contracts/:id/edit" element={<ContractFormPage />} />
+        <Route path="/contracts/:typeFilter" element={<ContractsPage />} />
+        <Route path="/contracts/view/:id" element={<ContractDetailsPage />} />
+        
+        {/* Interventions / Planning */}
+        <Route path="/interventions" element={<InterventionsPage />} />
+        <Route path="/interventions/new" element={<InterventionFormPage />} />
+        <Route path="/interventions/:id/edit" element={<InterventionFormPage />} />
+        <Route path="/interventions/view/:id" element={<InterventionDetailsPage />} />
+        <Route path="/planning" element={<InterventionsPage />} />
+        
+        {/* Agent Routes - My Missions */}
+        <Route path="/my-missions" element={<MyMissionsPage />} />
+        <Route path="/my-missions/:id" element={<MissionDetailPage />} />
+        <Route path="/absence-request" element={<AbsenceRequestPage />} />
+        
+        {/* Personnel / HR Routes */}
+        <Route path="/personnel/absences" element={<AbsencesPage />} />
+        <Route path="/personnel/absences/new" element={<AbsenceRequestPage />} />
+        <Route path="/personnel/absences/:id" element={<AbsenceRequestPage />} />
         
         {/* Placeholder routes - will be implemented in future phases */}
-        <Route path="/users/*" element={<ComingSoonPage title="User Management" />} />
-        <Route path="/clients" element={<ComingSoonPage title="Clients" />} />
-        <Route path="/contracts" element={<ComingSoonPage title="Contracts" />} />
-        <Route path="/sites" element={<ComingSoonPage title="Sites" />} />
-        <Route path="/planning" element={<ComingSoonPage title="Planning" />} />
         <Route path="/personnel" element={<ComingSoonPage title="Personnel" />} />
         <Route path="/notifications" element={<ComingSoonPage title="Notifications" />} />
         <Route path="/my-agents" element={<ComingSoonPage title="Your Agents" />} />
-        <Route path="/my-missions" element={<ComingSoonPage title="My Missions" />} />
         <Route path="/my-schedule" element={<ComingSoonPage title="My Schedule" />} />
         <Route path="/my-contracts" element={<ComingSoonPage title="My Contracts" />} />
         <Route path="/my-sites" element={<ComingSoonPage title="My Sites" />} />

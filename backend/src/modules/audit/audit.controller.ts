@@ -1,7 +1,12 @@
-import { Controller, Get, Query, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Query, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { AuditService } from './audit.service';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { UserRole } from '../../shared/types/user.types';
 
 @Controller('audit')
+@UseGuards(RolesGuard)
+@Roles(UserRole.SUPER_ADMIN)
 export class AuditController {
     constructor(private readonly auditService: AuditService) { }
 

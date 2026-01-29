@@ -5,7 +5,7 @@ import {
   Body,
   Query,
 } from '@nestjs/common';
-import { AttendanceService } from './attendance.service';
+import { AttendanceService, DailySummary } from './attendance.service';
 import { ClockInDto, ClockOutDto } from './dto/attendance.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -37,6 +37,15 @@ export class AttendanceController {
   @Get('today')
   async getTodayAttendance(@CurrentUser('id') userId: string) {
     return this.attendanceService.getTodayAttendance(userId);
+  }
+
+  @Get('daily-summary')
+  async getDailySummary(
+    @CurrentUser('id') userId: string,
+    @Query('date') date?: string,
+  ) {
+    const targetDate = date ? new Date(date) : undefined;
+    return this.attendanceService.getDailySummary(userId, targetDate);
   }
 
   @Get('history')

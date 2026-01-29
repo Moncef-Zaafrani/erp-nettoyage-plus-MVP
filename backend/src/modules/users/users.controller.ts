@@ -22,6 +22,7 @@ import {
   BatchCreateUsersDto,
   BatchUpdateUsersDto,
   BatchIdsDto,
+  AdminResetPasswordDto,
 } from './dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -297,5 +298,93 @@ export class UsersController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async restoreBatch(@Body() batchDto: BatchIdsDto) {
     return this.usersService.restoreBatch(batchDto);
+  }
+
+  // ==================== BATCH STATUS OPERATIONS ====================
+
+  /**
+   * POST /api/users/batch/activate
+   * Activate multiple users (set status to ACTIVE)
+   */
+  @Post('batch/activate')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchActivate(
+    @Body() batchDto: BatchIdsDto,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.batchActivate(batchDto.ids, user.id, ip);
+  }
+
+  /**
+   * POST /api/users/batch/deactivate
+   * Deactivate multiple users (set status to INACTIVE)
+   */
+  @Post('batch/deactivate')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchDeactivate(
+    @Body() batchDto: BatchIdsDto,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.batchDeactivate(batchDto.ids, user.id, ip);
+  }
+
+  /**
+   * POST /api/users/batch/assign-supervisor
+   * Assign a supervisor to multiple users
+   */
+  @Post('batch/assign-supervisor')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchAssignSupervisor(
+    @Body() body: { ids: string[]; supervisorId: string },
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.batchAssignSupervisor(body.ids, body.supervisorId, user.id, ip);
+  }
+
+  /**
+   * POST /api/users/batch/assign-zone
+   * Assign a zone to multiple users
+   */
+  @Post('batch/assign-zone')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchAssignZone(
+    @Body() body: { ids: string[]; zoneId: string },
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.batchAssignZone(body.ids, body.zoneId, user.id, ip);
+  }
+
+  // ==================== PASSWORD MANAGEMENT ====================
+
+  /**
+   * POST /api/users/:id/reset-password
+   * Admin-initiated password reset (temp password or reset link)
+   */
+  @Post(':id/reset-password')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async resetPassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() resetDto: AdminResetPasswordDto,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    // Fetch target user to check permission
+    const targetUser = await this.usersService.findById(id);
+
+    // RESTRICTION: Prevent resetting password for higher privilege users
+    if (user.role !== UserRole.SUPER_ADMIN) {
+      if (
+        targetUser.role === UserRole.ADMIN ||
+        targetUser.role === UserRole.SUPER_ADMIN
+      ) {
+        throw new ForbiddenException('You cannot reset password for this user');
+      }
+    }
+
+    return this.usersService.adminResetPassword(id, resetDto.mode, user.id, ip);
   }
 }

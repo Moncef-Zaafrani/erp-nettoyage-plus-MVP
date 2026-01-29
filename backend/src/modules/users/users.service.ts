@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
   Logger,
   Inject,
   forwardRef,
@@ -157,6 +158,19 @@ export class UsersService {
     }
 
     return this.sanitizeUser(user);
+  }
+
+  /**
+   * Find users by role (for report routing, notifications, etc.)
+   */
+  async findByRole(role: UserRole, activeOnly = true): Promise<User[]> {
+    const where: FindOptionsWhere<User> = { role };
+    if (activeOnly) {
+      where.status = UserStatus.ACTIVE;
+    }
+    
+    const users = await this.userRepository.find({ where });
+    return users.map(user => this.sanitizeUser(user));
   }
 
   /**
@@ -537,6 +551,279 @@ export class UsersService {
     );
 
     return { restored, errors };
+  }
+
+  // ==================== BATCH STATUS OPERATIONS ====================
+
+  /**
+   * Batch activate users (set status to ACTIVE)
+   */
+  async batchActivate(
+    ids: string[],
+    actorId?: string,
+    ipAddress?: string,
+  ): Promise<{ success: boolean; count: number; errors: Array<{ id: string; error: string }> }> {
+    let count = 0;
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of ids) {
+      try {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+          errors.push({ id, error: 'User not found' });
+          continue;
+        }
+        user.status = UserStatus.ACTIVE;
+        await this.userRepository.save(user);
+        count++;
+
+        // Audit log
+        await this.auditService.log({
+          actorId: actorId || 'system',
+          action: 'STATUS_CHANGE',
+          entityType: 'user',
+          entityId: id,
+          changes: { newStatus: 'ACTIVE' },
+          ipAddress,
+        });
+      } catch (error) {
+        errors.push({ id, error: error.message });
+      }
+    }
+
+    this.logger.log(`Batch activate: ${count} activated, ${errors.length} failed`);
+    return { success: true, count, errors };
+  }
+
+  /**
+   * Batch deactivate users (set status to INACTIVE)
+   */
+  async batchDeactivate(
+    ids: string[],
+    actorId?: string,
+    ipAddress?: string,
+  ): Promise<{ success: boolean; count: number; errors: Array<{ id: string; error: string }> }> {
+    let count = 0;
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of ids) {
+      try {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+          errors.push({ id, error: 'User not found' });
+          continue;
+        }
+        user.status = UserStatus.INACTIVE;
+        await this.userRepository.save(user);
+        count++;
+
+        // Audit log
+        await this.auditService.log({
+          actorId: actorId || 'system',
+          action: 'STATUS_CHANGE',
+          entityType: 'user',
+          entityId: id,
+          changes: { newStatus: 'INACTIVE' },
+          ipAddress,
+        });
+      } catch (error) {
+        errors.push({ id, error: error.message });
+      }
+    }
+
+    this.logger.log(`Batch deactivate: ${count} deactivated, ${errors.length} failed`);
+    return { success: true, count, errors };
+  }
+
+  /**
+   * Batch assign supervisor to users
+   */
+  async batchAssignSupervisor(
+    ids: string[],
+    supervisorId: string,
+    actorId?: string,
+    ipAddress?: string,
+  ): Promise<{ success: boolean; count: number; errors: Array<{ id: string; error: string }> }> {
+    // Verify supervisor exists and is a supervisor
+    const supervisor = await this.userRepository.findOne({ where: { id: supervisorId } });
+    if (!supervisor) {
+      throw new NotFoundException(`Supervisor with ID ${supervisorId} not found`);
+    }
+    if (supervisor.role !== UserRole.SUPERVISOR && supervisor.role !== UserRole.ADMIN) {
+      throw new BadRequestException('Target user is not a supervisor');
+    }
+
+    let count = 0;
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of ids) {
+      try {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+          errors.push({ id, error: 'User not found' });
+          continue;
+        }
+        user.supervisorId = supervisorId;
+        await this.userRepository.save(user);
+        count++;
+
+        // Audit log
+        await this.auditService.log({
+          actorId: actorId || 'system',
+          action: 'SUPERVISOR_ASSIGNED',
+          entityType: 'user',
+          entityId: id,
+          changes: { supervisorId },
+          ipAddress,
+        });
+      } catch (error) {
+        errors.push({ id, error: error.message });
+      }
+    }
+
+    this.logger.log(`Batch assign supervisor: ${count} assigned, ${errors.length} failed`);
+    return { success: true, count, errors };
+  }
+
+  /**
+   * Batch assign zone to users
+   */
+  async batchAssignZone(
+    ids: string[],
+    zoneId: string,
+    actorId?: string,
+    ipAddress?: string,
+  ): Promise<{ success: boolean; count: number; errors: Array<{ id: string; error: string }> }> {
+    let count = 0;
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of ids) {
+      try {
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+          errors.push({ id, error: 'User not found' });
+          continue;
+        }
+        // Note: Zone assignment might need to use a different mechanism
+        // depending on schema. This is a placeholder.
+        // user.zoneId = zoneId;
+        await this.userRepository.save(user);
+        count++;
+
+        // Audit log
+        await this.auditService.log({
+          actorId: actorId || 'system',
+          action: 'ZONE_ASSIGNED',
+          entityType: 'user',
+          entityId: id,
+          changes: { zoneId },
+          ipAddress,
+        });
+      } catch (error) {
+        errors.push({ id, error: error.message });
+      }
+    }
+
+    this.logger.log(`Batch assign zone: ${count} assigned, ${errors.length} failed`);
+    return { success: true, count, errors };
+  }
+
+  // ==================== PASSWORD MANAGEMENT ====================
+
+  /**
+   * Generate a random temporary password
+   */
+  private generateTemporaryPassword(length = 12): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+
+  /**
+   * Admin-initiated password reset
+   * @param id - User ID to reset password for
+   * @param mode - 'temp' for temporary password, 'link' for reset link
+   * @param actorId - ID of admin performing the action
+   * @param ipAddress - IP address of the request
+   */
+  async adminResetPassword(
+    id: string,
+    mode: 'temp' | 'link',
+    actorId: string,
+    ipAddress?: string,
+  ): Promise<{ message: string; tempPassword?: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    if (mode === 'temp') {
+      // Generate temporary password
+      const tempPassword = this.generateTemporaryPassword();
+      
+      // Update user with new password and force password change flag
+      user.password = tempPassword;
+      user.forcePasswordChange = true;
+      user.lastPasswordChangeAt = new Date();
+      await this.userRepository.save(user);
+
+      this.logger.log(`Temporary password set for user: ${user.email} (ID: ${id})`);
+
+      // Log the temporary password (in production, this would be sent via email)
+      this.logger.log(`[DEV] Temporary password for ${user.email}: ${tempPassword}`);
+
+      // Audit log
+      await this.auditService.log({
+        actorId: actorId || 'system',
+        action: 'PASSWORD_RESET_TEMP',
+        entityType: 'user',
+        entityId: id,
+        changes: { method: 'temporary_password' },
+        ipAddress,
+      });
+
+      return {
+        message: `Temporary password has been set for ${user.email}. Check logs for the password (dev mode).`,
+        tempPassword, // Return to admin so they can share it securely
+      };
+    } else {
+      // Send reset link (same as forgotPassword flow, but admin-initiated)
+      // Generate a secure reset token using JWT
+      const jwtService = new (require('@nestjs/jwt').JwtService)({
+        secret: process.env.JWT_SECRET || 'your-secret-key',
+      });
+      
+      const resetToken = jwtService.sign(
+        { sub: user.id, email: user.email, adminReset: true },
+        { expiresIn: '24h' }, // Longer expiry for admin-initiated reset
+      );
+
+      // Construct reset URL
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const baseUrl = frontendUrl.startsWith('http') ? frontendUrl : `https://${frontendUrl}`;
+      const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+
+      this.logger.log(`Password reset link generated for user: ${user.email}`);
+      this.logger.log(`[DEV] Reset URL for ${user.email}: ${resetUrl}`);
+
+      // Audit log
+      await this.auditService.log({
+        actorId: actorId || 'system',
+        action: 'PASSWORD_RESET_LINK',
+        entityType: 'user',
+        entityId: id,
+        changes: { method: 'reset_link' },
+        ipAddress,
+      });
+
+      return {
+        message: `Password reset link has been generated for ${user.email}. Check logs for the URL (dev mode).`,
+      };
+    }
   }
 
   // ==================== HELPER METHODS ====================

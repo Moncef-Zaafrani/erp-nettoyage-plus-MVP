@@ -9,11 +9,13 @@ export enum ClientType {
 
 /**
  * Client Status - Current state of the client relationship (business entity)
- * Note: This is different from User.clientStatus (CURRENT/FORMER/ARCHIVED)
+ * 
+ * PROSPECT: Potential client, not yet signed a contract
+ * CURRENT: Active client with ongoing services/contract
+ * ARCHIVED: Relationship ended, soft deleted (data retained for history)
  */
 export enum ClientStatus {
   PROSPECT = 'PROSPECT', // Potential client, not yet active
-  ACTIVE = 'ACTIVE', // Active client with ongoing services
-  INACTIVE = 'INACTIVE', // Temporarily paused (e.g., payment issues)
+  CURRENT = 'CURRENT', // Active client with ongoing services
   ARCHIVED = 'ARCHIVED', // Relationship ended, soft deleted
 }

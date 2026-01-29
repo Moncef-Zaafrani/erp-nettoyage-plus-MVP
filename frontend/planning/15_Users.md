@@ -1,208 +1,444 @@
-# Users Page & Tab Redesign — Step-by-Step Plan
+# Users & Clients Pages — Implementation Plan (Updated January 2026)
 
-## Step 1: Access & High-level Rules (enforced frontend + backend)
+## Overview
 
-- Access allowed: Super Admin, Admin, Superviseur only.
-- Blocked: Agent, Client must not see navigation links or pages.
-- Enforce checks both client-side and server-side on every request (authorization middleware).
-- Single Super Admin session rule: enforce in auth/session logic (note: backend change, WIP but list it here).
-- Logging: every access to Users page and every user modification must be recorded in an audit log (minimal Phase 1: who/what/when).
-
-- Acceptance criteria
-  - Non-authorized roles receive 403 on UI routes and endpoints.
-  - Super Admin unique-login control is documented and tested.
-  - Audit log entries exist for all access and modifications. Even if the user tries accessing the page directly via URL, it should be logged.
+Modern card/table view pages for managing Users and Clients, with filtering, sorting, batch operations, and role-based access control.
 
 ---
 
-## Step 2: Roles and Responsibilities
+## 1. Navigation Structure
 
-- **Super Admin**
-  - Full create/read/update/archive for all users and all roles.
-  - Can assign/create normal roles/custom roles (custom roles UI: show but when clicked shows the Phase 2 pop up, grayed out).
-  - Can view audit logs + change any user status (force).
-  - Acceptance: Super Admin can perform any action on any user in UI and logs show the action.
+### Users Routes (by role type)
+| Route | Description | Who can access |
+|-------|-------------|----------------|
+| `/users` | All users (filtered by viewer permissions) | Super Admin, Admin |
+| `/users/admins` | Admin users only | Super Admin only |
+| `/users/supervisors` | Supervisor users (Chef d'équipe) | Super Admin, Admin |
+| `/users/agents` | Agent users (cleaning staff) | Super Admin, Admin, Supervisor* |
 
-- **Admin**
-  - Manage Supervisors, Agents, Clients (create/edit/archive) but not other Admins or Super Admin.
-  - Acceptance: Admin cannot view or edit Admin/Super Admin accounts; attempts produce a clear error.
+*Supervisors only see their assigned agents
 
-- **Superviseur** (maps to Chef d’équipe / Chef de site)
-  - View only their assigned Agents. (add this feature to the backend)
-  - Cannot change role, contract info, personal details.
-  - Limited edits on those Agents: attendance status, site assignment, performance notes.
-  - Acceptance: Superviseur list shows only assigned Agents; edit operations limited to allowed fields.
+### Clients Routes (by client type)
+| Route | Description | Who can access |
+|-------|-------------|----------------|
+| `/clients` | All clients | Super Admin, Admin |
+| `/clients/companies` | Company clients (COMPANY, MULTI_SITE) | Super Admin, Admin |
+| `/clients/individuals` | Individual clients (INDIVIDUAL) | Super Admin, Admin |
 
-- **Agent**
-  - No access to Users page (can view own profile via “My profile” elsewhere).
-  - Acceptance: Agent cannot access Users page routes or see Users nav if he tried to access it directly via URL, it should be logged.
+### Navigation Links (already configured)
+```
+Users
+├── All Users → /users
+├── Admins → /users/admins
+├── Supervisors → /users/supervisors
+└── Agents → /users/agents
 
-- **Client**
-  - No access to Users page (client portal separate).
-  - Acceptance: Client cannot access Users page or Users endpoints if he tried to access it directly via URL, it should be logged.
-
----
-
-## Step 3: Field-level Permissions & UI behavior
-
-- Super Admin: all fields + audit actions + role management.
-- Admin: all fields for Supervisor/Agent/Client; cannot touch Admin/Super Admin fields.
-- Superviseur: view all fields for assigned Agents; edit only:
-  - Attendance status (Active / On break / Ended shift / Inactive)
-  - Site assignment (assign agent to site from list)
-  - Performance notes (free text short)
-  
--> UI hints: disabled fields should show tooltip “You don’t have permissions to edit this field.”
--> All role changes and sensitive actions must require confirmation modals with action summary.
-
-- Acceptance criteria
-  - Attempted edits outside permissions are blocked and show clear messages if the user tries to edit the field melaciouslly or via API request log it and give eror.
-  - Confirmation modal appears for Archive, Change Role, Reset Password.
+Clients
+├── All Clients → /clients
+├── Companies → /clients/companies
+└── Individuals → /clients/individuals
+```
 
 ---
 
-## Step 4: Role Hierarchy, Assignment Logic & Status rules
+## 2. Access Control & Permissions
 
 ### Role Hierarchy
+```
+SUPER_ADMIN > ADMIN > SUPERVISOR > AGENT
+                                    └── CLIENT (separate hierarchy)
+```
 
-- Super Admin > Admin > Superviseur > Agent
-- Clients are outside hierarchy (view-only access to own resources).
+### Permission Matrix — Users
 
-### Assignment logic
+| Viewer Role | Can See | Can Create | Can Edit | Can Archive |
+|-------------|---------|------------|----------|-------------|
+| SUPER_ADMIN | All users except themselves | All roles | All fields | Yes |
+| ADMIN | Supervisors, Agents, Clients | Supervisors, Agents, Clients | All fields (own scope) | Yes |
+| SUPERVISOR | Only assigned Agents | No | Notes only | No |
+| AGENT | ❌ No access | ❌ | ❌ | ❌ |
+| CLIENT | ❌ No access | ❌ | ❌ | ❌ |
 
-- Super Admin & Admin: assign Supervisors to Agents; assign Agents to one or more sites.
-- Superviseur: can only reassign agents within their zone/team (UI filter must prevent cross-zone assignment).
-- Agents: always linked to at least one Supervisor and at least one Site (enforce at creation).
-- Clients: linked to sites and contracts, not to personnel.
+### Permission Matrix — Clients
 
-### Statuses (employee)
-- Active, Inactive, Archived (soft delete).
-- Employee self-status transitions (Active ↔ Inactive) allowed (e.g., start/end shift) — these are quick actions in mobile/app but reflected in Users page history.
-- Only Super Admin (or Admin for non-forced cases) can Archive/Restore.
-- Archived employees are permenantly inactive, if restored they will be inactive but can be activated again.
-- Super Admin account itself: no status field (cannot be archived, cannot be active or inactive, his status is SUPER).
-
-#### Statuses (client)
-- Current, Former, Archived.
-- Current: Client is under an active contract and can access their portal.
-- Former: Client's contract has ended; No cuurent work or contract is with them but still has access to the portal to see old contracts and works, or to leave a review, and historical data is retained.
-- Archived: Client is fully removed from active operations (soft delete); no access, but data is kept for records.
-
-
-- Acceptance criteria : 
-  - Assignment actions trigger validation: cannot assign Agent to Supervisor outside agent’s zone.
-  - Status transitions are logged with timestamp and actor.
+| Viewer Role | Can See | Can Create | Can Edit | Can Archive |
+|-------------|---------|------------|----------|-------------|
+| SUPER_ADMIN | All clients | Yes | All fields | Yes |
+| ADMIN | All clients | Yes | All fields | Yes |
+| SUPERVISOR | ❌ No access | ❌ | ❌ | ❌ |
+| AGENT | ❌ No access | ❌ | ❌ | ❌ |
+| CLIENT | Own profile only (separate portal) | ❌ | Limited | ❌ |
 
 ---
 
-## Step 5: UI Structure & Components (Phase 1 screens)
+## 3. UI Components
 
-### 5.1 Navigation & Entry Points
+### 3.1 View Toggle
+- Two views: **Card View** (default) and **Table View**
+- Toggle button in top-right (icons: grid/list)
+- View preference persisted in user settings
 
-- Sidebar nav item:
-  - Super Admin: “Users” → dropdown: Admins, Supervisors, Agents, Clients, Custom Roles (WIP badge for Roles manager its Phase2 features).
-  - Admin: “Users” → dropdown: Supervisors, Agents, Clients.
-  - Superviseur: “Your Agents”. no dropdown.
+### 3.2 Card View — User Card
+```
+┌──────────────────────────────────────────────────┐
+│ [Avatar]  Name                          [•••]    │
+│           🛡️ Role Badge                          │
+│                                                  │
+│ ✉️ email@example.com                             │
+│ 📞 +33 6 12 34 56 78                             │
+│                                                  │
+│ [Active]                    Il y a 5 min        │
+└──────────────────────────────────────────────────┘
+```
 
-- Clicking category → filtered list. Double-click “Users” or “All” → combined list (limited to viewport permissions).
+Fields shown:
+- Avatar (initials or photo)
+- Full name
+- Role icon + label (shield for Admin, users-cog for Supervisor, user-check for Agent)
+- Email
+- Phone
+- Zone (for Supervisors/Agents)
+- Status badge: `Active` (green), `Inactive` (gray), `Pending` (amber), `Archived` (red)
+- Last active time (relative: "Il y a X min/h/j" or "Jamais")
 
-- UX: show counts per category (e.g., Agents: 178). Provide a small info icon that explains “Counts reflect currently visible users based on your role.”
+### 3.3 Card View — Client Card
+
+**Company Card:**
+```
+┌──────────────────────────────────────────────────┐
+│ [🏢]  Company Name                      [•••]    │
+│       Contact: Person Name                       │
+│                                                  │
+│ ✉️ contact@company.com                           │
+│ 📞 +33 1 23 45 67 89                             │
+│ 📍 123 Street, City                              │
+│                                                  │
+│ ⊙ 12 sites    📄 3 contrats actifs              │
+│                                                  │
+│ [Actuel]                    Depuis janv. 2023   │
+└──────────────────────────────────────────────────┘
+```
+
+**Individual Card:**
+```
+┌──────────────────────────────────────────────────┐
+│ [👤]  Person Name                       [•••]    │
+│                                                  │
+│ ✉️ person@email.com                              │
+│ 📞 +33 6 12 34 56 78                             │
+│ 📍 15 Rue de la Paix, Paris                      │
+│                                                  │
+│ ⊙ 1 site     📄 1 contrat actif                 │
+│                                                  │
+│ [Actuel]                    Depuis févr. 2024   │
+└──────────────────────────────────────────────────┘
+```
+
+### 3.4 Table View Columns
+
+**Users Table:**
+| Name | Email | Role | Status | Zone | Supervisor | Last Active | Actions |
+|------|-------|------|--------|------|------------|-------------|---------|
+
+**Clients Table:**
+| Name | Type | Email | Phone | Sites | Contracts | Status | Member Since | Actions |
+|------|------|-------|-------|-------|-----------|--------|--------------|---------|
+
+Table features:
+- Sortable columns (click header)
+- Sticky header
+- Row hover highlight
+- Actions dropdown
+
+### 3.5 Filter Drawer (Side Panel)
+
+Opens from right side when filter icon clicked.
+
+**Users Filters:**
+- Status: Active, Inactive, Pending, Archived (multi-select)
+- Supervisor: Dropdown (only for Agents)
+- Zone: Dropdown (multi-select)
+- Last Online: Today, This Week, This Month, Older, Never
+- Show Archived: Toggle (off by default)
+
+**Clients Filters:**
+- Status: Active, Inactive, Archived (multi-select)
+- Type: Company, Multi-Site, Individual (multi-select)
+- Has Active Contract: Yes, No, Any
+- Show Archived: Toggle (off by default)
+
+### 3.6 Actions Dropdown (•••)
+
+**For Users (based on viewer permissions):**
+- View Profile
+- Edit
+- Reset Password (Admin+)
+- ─────────────
+- Deactivate (red text, requires confirmation)
+
+**For Clients:**
+- View Details
+- Edit
+- Add Site (WIP if sites not ready)
+- Create Contract (WIP if contracts not ready)
+- ─────────────
+- Archive (red text, requires confirmation)
+
+### 3.7 Right-Click Context Menu
+Same as actions dropdown, plus:
+- Select (enables multi-select mode for that item)
+
+### 3.8 Batch Actions Bar
+Appears at bottom when items are selected:
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ☑️ 5 selected    [Activate] [Deactivate] [Assign...] [Clear]       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Users Batch Actions:**
+- Activate (restore)
+- Deactivate (archive)
+- Assign Supervisor
+- Assign Zone/Site
+
+**Clients Batch Actions:**
+- Activate
+- Archive
 
 ---
 
-### 5.2 List/Table View (per role)
+## 4. User Statuses
 
-- Common columns: Name, Email, Role(if “All”) / Zone(if its an agent or supervisor) / Supervisor(if its an agent or supervisor) / Number of assigned sites(if its an agent or supervisor), Status, Actions.
-- Actions cell: contextual buttons (Edit, Archive/Restore, Quick Status (Sleep/Awake), More → details).
-- Multi-select and batch actions (only for Super Admin & Admin): Activate(Restore), Deactivate(Archive), Assign Site, Assign Supervisor, Batch Add.
-- Filters & search: role (if “All”), status, zone, site, supervisor, free-text (name/email/id).
-- Pagination + server-side filtering. Keep page size options.
+### Employee Statuses (Admin, Supervisor, Agent)
+| Status | Display | Badge Color | Description |
+|--------|---------|-------------|-------------|
+| ACTIVE | Active / Actif / نشط | Green | Currently employed, full access |
+| INACTIVE | Inactive / Inactif / غير نشط | Gray | Temporarily disabled |
+| Pending* | En attente / قيد الانتظار | Amber | Email not verified (emailVerified=false) |
+| ARCHIVED | Archived / Archivé / مؤرشف | Red | Soft deleted |
 
-- WIP (Phase 2) UI elements (greyed & annotated)
- - Export to CSV with detailed audit history (Phase 2).
- - Role analytics chart in table header (Phase 3).
----
+*Pending is a computed status: status=ACTIVE but emailVerified=false
 
-### 5.3 User detail page (contextual per role)
-
-- Top summary: placeholder avatar photo (until feature will be implementedd), name, role, status badge, primary contact, zone & supervisor, assigned sites.
-- Tabs (Phase 1): Overview | Assignments | Status History (logs) | Notes
-  - Overview: personal details, contract reference (link to Contract module).
-  - Assignments: list of sites and schedule references (show assigned schedule entries if available).
-  - Status History: immutable audit trail entries (who changed what/when).
-  - Notes: performance notes (Superviseur can add/edit; Admin/Super Admin can add/edit/remove). Note will have a tag of who made the note.
-- Actions in header: Edit (permitted fields), Reset Password (Admin/Super Admin), Deactivate/Archive.
-- If the user has multi-site assignments, show pill badges for each site.
-- If the user has multi-schedule assignments, show pill badges for each schedule.
-- If the user has multi-contract assignments, show pill badges for each contract.
-- If the user has multi-client assignments, show pill badges for each client.
-
-- Acceptance criteria
-  - Clicking a user from list opens detail page; detail actions respect field-level permissions.
+### Client Statuses
+| Status | Display | Badge Color | Description |
+|--------|---------|-------------|-------------|
+| ACTIVE | Actuel / Current | Green | Active client |
+| INACTIVE | Inactif / Inactive | Gray | Paused relationship |
+| PROSPECT | Prospect | Blue | Potential client |
+| ARCHIVED | Archivé / Archived | Red | Soft deleted |
 
 ---
 
-## Step 6: Batch Actions & Bulk UX
+## 5. Empty States
 
-- Batch Add: CSV template for users (Phase 1: support Agents, Supervisors, Clients).
-- Batch Assign: allow assigning selected Agents to Site or Supervisor; validation checks prevent cross-zone assignments for Superviseur.
-- Batch status operations must show preflight summary and impact (e.g., “This will archive 10 agents — they will lose login access”).
-- Undo option for batch actions within a short window, 15 seconds can be modified later in settings (UI-level; backend provide soft-delete/archival).
+When no results match filters, show a friendly message:
 
-- Acceptance criteria
-  - CSV import preview prior to commit; errors clearly reported row-by-row.
+**Users:**
+> 🔍 "No users found matching your filters. Maybe they're all on a coffee break?"
 
----
-
-## Step 7 : Integration points with Phase 1 modules (clear mapping + WIP controls)
-
-- Interventions / Planning: Users page must show and allow linking an Agent to interventions/planning entries (Phase 1). If planning redesign not ready, show link/button greyed with tooltip: “Planning module — Phase 1 (link active once planning redesign is deployed).”
-- Contracts: show contract IDs on user page (read-only link). Full contract management is Phase 1 — but if not implemented, show WIP.
-- Audit & reports: minimal audit log viewer for Super Admin (Phase 1). Advanced reports are Phase 2/3 (greyed).
+**Clients:**
+> 🏢 "No clients here yet. Time to grow that business!"
 
 ---
 
-## Step 8 : Data & Validation (frontend UX expectations; DB rework note)
+## 6. Responsive Behavior
 
-- Required fields on create user: First name, Last name, Email (unique), Role, Supervisor (if Agent), At least one Site (Agent).
-- Validation UI: inline validation messages; prevent submit if required fields missing.
-- Email confirmation UX: show “Confirm Email” control for Admin/Super Admin; if unconfirmed show a red badge.
-- Note: you’ll implement database schema changes for assignment history and audit logs in the backend (“database rework in backend”) feel free to model the database as you want.
+| Screen Size | Card View | Table View |
+|-------------|-----------|------------|
+| Desktop (>1200px) | 4 cards per row | Full table |
+| Tablet (768-1200px) | 2-3 cards per row | Horizontal scroll |
+| Mobile (<768px) | 1 card (simplified) | Auto-switch to card list |
 
----
-
-## Step 9 : Audit, Logs & Security UX
-
-- Audit trail visible to Super Admin: entries like “Admin X changed Supervisor for Agent Y from A to B — date/time.”
-- When a sensitive change occurs (role change, archive, password reset), send a notification to the Super Admin (Phase 1: simple in-app bell + email optional as Phase 2).
-- Password reset flow: Admin/Super Admin can trigger reset; user receives email (email sending configuration considered Phase 1).
-- Session management note: Super Admin single-login enforcement is planned (backend).
+Mobile simplifications:
+- Hide secondary fields (phone, address)
+- Compact status badges
+- Swipe for actions
 
 ---
 
-## Step 10 : Testing & QA (concrete checklist)
+## 7. Backend Requirements
 
-- Unit tests: role-based permission checks for each UI action (list, detail, edit, archive).
-- Integration tests: create Admin → create Supervisor → assign Agents → verify visibility rules.
-- E2E tests (staging): simulate Superviseur view — cannot peek into other zones.
-- Manual QA checklist:
-  - Create user with missing fields → correct error messages.
-  - Admin attempts to edit Super Admin → blocked.
-  - Superviseur attempts to assign agent to site outside zone → blocked.
-  - Batch CSV import → preview errors & successful rows.
-  - Audit log entry appears after status change.
+### User Entity Additions (if not present)
+- `lastLoginAt`: Already exists ✅
+- `emailVerified`: Already exists ✅
+- `supervisorId`: Already exists ✅
 
-- Acceptance criteria
-  - All tests pass in staging; documented test scenarios available.
+### Zone Support
+- Zone entity: Already exists ✅
+- AgentZoneAssignment: Already exists ✅
+- Need endpoint to get zones list for filter dropdown
+
+### Client Entity Additions
+- `sitesCount`: Computed from Sites relation
+- `activeContractsCount`: Computed from Contracts relation
+
+### API Endpoints Needed
+
+**Users:**
+- `GET /users` - List with filters (role, status, zone, supervisor)
+- `GET /users/:id` - Get single user
+- `POST /users` - Create user
+- `PATCH /users/:id` - Update user
+- `DELETE /users/:id` - Soft delete (archive)
+- `POST /users/batch/activate` - Batch activate
+- `POST /users/batch/deactivate` - Batch deactivate
+- `POST /users/batch/assign-supervisor` - Batch assign supervisor
+- `POST /users/batch/assign-zone` - Batch assign zone
+
+**Clients:**
+- `GET /clients` - List with filters (type, status, hasActiveContract)
+- `GET /clients/:id` - Get single client with counts
+- `POST /clients` - Create client
+- `PATCH /clients/:id` - Update client
+- `DELETE /clients/:id` - Soft delete (archive)
+- `POST /clients/batch/activate` - Batch activate
+- `POST /clients/batch/archive` - Batch archive
+
+**Zones:**
+- `GET /zones` - List all zones for dropdowns
 
 ---
 
-## Requirements : UX polish, accessibility & localisation
+## 8. File Structure
 
-- Accessibility: labels, aria attributes, keyboard navigation for table actions, contrast checks.
-- Localisation: UI strings ready for FR/EN/AR.
-- Dark mode / light mode works.
-- Small UX touches:
-  - WIP badges for Phase 2/3 features (greyed controls + tooltip + small i con animation).
-  - Helpful empty-state screens (e.g., “No Agents assigned — click ‘Create New’ to add”) can be disabled in settings.
-  - Bulk action confirmation summaries.
+```
+frontend/src/
+├── pages/
+│   ├── users/
+│   │   ├── UsersPage.tsx       # Main users page with view toggle
+│   │   ├── UserDetailPage.tsx  # Single user detail view
+│   │   └── index.ts
+│   └── clients/
+│       ├── ClientsPage.tsx     # Main clients page with view toggle
+│       ├── ClientDetailPage.tsx
+│       └── index.ts
+├── components/
+│   ├── users/
+│   │   ├── UserCard.tsx        # Card view component
+│   │   ├── UserTable.tsx       # Table view component
+│   │   ├── UserFilters.tsx     # Filter drawer content
+│   │   └── UserBatchBar.tsx    # Batch actions bar
+│   ├── clients/
+│   │   ├── ClientCard.tsx
+│   │   ├── ClientTable.tsx
+│   │   ├── ClientFilters.tsx
+│   │   └── ClientBatchBar.tsx
+│   └── shared/
+│       ├── ViewToggle.tsx      # Card/Table toggle button
+│       ├── FilterDrawer.tsx    # Right-side drawer wrapper
+│       ├── StatusBadge.tsx     # Reusable status badge
+│       ├── ActionDropdown.tsx  # •••  dropdown menu
+│       └── ConfirmModal.tsx    # Confirmation dialog
+└── services/
+    └── api.ts                  # Add usersApi, clientsApi, zonesApi
+```
+
+---
+
+## 9. Implementation Order
+
+1. ✅ Navigation structure (already done)
+2. Add API endpoints to frontend (usersApi, clientsApi, zonesApi)
+3. Create shared components (ViewToggle, FilterDrawer, StatusBadge, etc.)
+4. Create UserCard and ClientCard components
+5. Create UsersPage with routing for /users, /users/admins, etc.
+6. Create ClientsPage with routing for /clients, /clients/companies, etc.
+7. Add table views (UserTable, ClientTable)
+8. Add filter drawer functionality
+9. Add batch selection and actions
+10. Add right-click context menu
+11. Add translations (i18n)
+12. Mobile responsiveness polish
+
+---
+
+## 10. Translations Needed
+
+### English (en)
+```javascript
+// Users
+'users.title': 'Users',
+'users.subtitle': 'Manage users and their permissions',
+'users.newUser': 'New User',
+'users.searchPlaceholder': 'Search users...',
+'users.noUsers': 'No users found',
+'users.noUsersMessage': "Maybe they're all on a coffee break?",
+'users.status.active': 'Active',
+'users.status.inactive': 'Inactive',
+'users.status.pending': 'Pending',
+'users.status.archived': 'Archived',
+'users.lastActive': 'Last active',
+'users.never': 'Never',
+'users.filters.title': 'Filters',
+'users.filters.status': 'Status',
+'users.filters.supervisor': 'Supervisor',
+'users.filters.zone': 'Zone',
+'users.filters.lastOnline': 'Last Online',
+'users.filters.showArchived': 'Show Archived',
+'users.actions.viewProfile': 'View Profile',
+'users.actions.edit': 'Edit',
+'users.actions.resetPassword': 'Reset Password',
+'users.actions.deactivate': 'Deactivate',
+'users.actions.activate': 'Activate',
+'users.actions.select': 'Select',
+'users.batch.selected': '{{count}} selected',
+'users.batch.assignSupervisor': 'Assign Supervisor',
+'users.batch.assignZone': 'Assign Zone',
+
+// Clients
+'clients.title': 'Clients',
+'clients.subtitle': '{{count}} active clients',
+'clients.newClient': 'New Client',
+'clients.searchPlaceholder': 'Search clients...',
+'clients.noClients': 'No clients found',
+'clients.noClientsMessage': 'Time to grow that business!',
+'clients.contact': 'Contact',
+'clients.sites': 'sites',
+'clients.activeContracts': 'active contracts',
+'clients.memberSince': 'Since',
+'clients.status.active': 'Current',
+'clients.status.inactive': 'Inactive',
+'clients.status.prospect': 'Prospect',
+'clients.status.archived': 'Archived',
+'clients.type.company': 'Company',
+'clients.type.multiSite': 'Multi-Site',
+'clients.type.individual': 'Individual',
+'clients.actions.viewDetails': 'View Details',
+'clients.actions.edit': 'Edit',
+'clients.actions.addSite': 'Add Site',
+'clients.actions.createContract': 'Create Contract',
+'clients.actions.archive': 'Archive',
+
+// Common
+'common.cardView': 'Card View',
+'common.tableView': 'Table View',
+'common.filters': 'Filters',
+'common.clearFilters': 'Clear Filters',
+'common.applyFilters': 'Apply',
+'common.selectMode': 'Select',
+'common.clearSelection': 'Clear Selection',
+```
+
+### French (fr) and Arabic (ar)
+Similar structure with translations...
+
+---
+
+## 11. WIP Features (Phase 2+)
+
+These should show WIP badge when clicked:
+- Custom Roles management
+- Export to CSV with audit history
+- Role analytics chart
+- Advanced reporting
+- Bulk CSV import preview
+
+---
+
+## Change Log
+
+| Date | Change | Author |
+|------|--------|--------|
+| Jan 2026 | Complete rewrite with modern card/table view, filter drawer, batch actions | AI |
+| Original | Initial planning document | Zied |

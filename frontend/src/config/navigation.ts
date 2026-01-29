@@ -21,6 +21,7 @@ import {
   BarChart3,
   MessageSquare,
   FileWarning,
+  CalendarDays,
   LucideIcon,
 } from 'lucide-react'
 
@@ -65,7 +66,9 @@ export const getNavigationConfig = (role: UserRole): NavSection[] => {
 function getSuperAdminNav(): NavSection[] {
   return [
     {
-      id: 'main',
+      id: 'principal',
+      title: 'Principal',
+      titleKey: 'nav.section.principal',
       items: [
         {
           id: 'dashboard',
@@ -87,11 +90,10 @@ function getSuperAdminNav(): NavSection[] {
           labelKey: 'nav.users',
           icon: Users,
           children: [
+            { id: 'users-all', label: 'All Users', labelKey: 'nav.users.all', icon: Users, href: '/users' },
             { id: 'users-admins', label: 'Admins', labelKey: 'nav.users.admins', icon: Shield, href: '/users/admins' },
-            { id: 'users-supervisors', label: 'Supervisors', labelKey: 'nav.users.supervisors', icon: UserCog, href: '/users/supervisors' },
+            { id: 'users-managers', label: 'Managers', labelKey: 'nav.users.supervisors', icon: UserCog, href: '/users/supervisors' },
             { id: 'users-agents', label: 'Agents', labelKey: 'nav.users.agents', icon: UserCheck, href: '/users/agents' },
-            { id: 'users-client-accounts', label: 'Client Accounts', labelKey: 'nav.users.clientAccounts', icon: User, href: '/users/clients' },
-            { id: 'users-roles', label: 'Custom Roles', labelKey: 'nav.users.roles', icon: Shield, href: '/users/roles', wip: true, wipPhase: 2 },
           ],
         },
         {
@@ -99,14 +101,22 @@ function getSuperAdminNav(): NavSection[] {
           label: 'Clients',
           labelKey: 'nav.clients',
           icon: Building2,
-          href: '/clients',
+          children: [
+            { id: 'clients-all', label: 'All Clients', labelKey: 'nav.clients.all', icon: Building2, href: '/clients' },
+            { id: 'clients-companies', label: 'Companies', labelKey: 'nav.clients.companies', icon: Building2, href: '/clients/companies' },
+            { id: 'clients-individuals', label: 'Individuals', labelKey: 'nav.clients.individuals', icon: User, href: '/clients/individuals' },
+          ],
         },
         {
           id: 'contracts',
           label: 'Contracts',
           labelKey: 'nav.contracts',
           icon: FileText,
-          href: '/contracts',
+          children: [
+            { id: 'contracts-all', label: 'All Contracts', labelKey: 'nav.contracts.all', icon: FileText, href: '/contracts' },
+            { id: 'contracts-permanent', label: 'Permanent', labelKey: 'nav.contracts.permanent', icon: FileText, href: '/contracts/permanent' },
+            { id: 'contracts-punctual', label: 'One-time', labelKey: 'nav.contracts.punctual', icon: FileText, href: '/contracts/punctual' },
+          ],
         },
         {
           id: 'sites',
@@ -123,25 +133,33 @@ function getSuperAdminNav(): NavSection[] {
       titleKey: 'nav.section.operations',
       items: [
         {
-          id: 'planning',
-          label: 'Planning',
-          labelKey: 'nav.planning',
+          id: 'interventions',
+          label: 'Interventions',
+          labelKey: 'nav.interventions',
           icon: Calendar,
-          href: '/planning',
+          children: [
+            { id: 'interventions-list', label: 'List', labelKey: 'nav.interventions.list', icon: ClipboardList, href: '/interventions' },
+            { id: 'interventions-planning', label: 'Planning', labelKey: 'nav.interventions.planning', icon: Calendar, href: '/planning' },
+            { id: 'interventions-calendar', label: 'Calendar', labelKey: 'nav.interventions.calendar', icon: Calendar, href: '/interventions/calendar', wip: true, wipPhase: 2 },
+          ],
         },
         {
           id: 'personnel',
           label: 'Personnel',
           labelKey: 'nav.personnel',
           icon: UsersRound,
-          href: '/personnel',
+          children: [
+            { id: 'personnel-employees', label: 'Employees', labelKey: 'nav.personnel.employees', icon: UsersRound, href: '/personnel' },
+            { id: 'personnel-absences', label: 'Absences', labelKey: 'nav.personnel.absences', icon: Calendar, href: '/personnel/absences' },
+            { id: 'personnel-attendance', label: 'Attendance', labelKey: 'nav.personnel.attendance', icon: Clock, href: '/personnel/attendance' },
+          ],
         },
         {
-          id: 'quality',
-          label: 'Quality Control',
-          labelKey: 'nav.quality',
-          icon: ClipboardList,
-          href: '/quality',
+          id: 'zones',
+          label: 'Zones',
+          labelKey: 'nav.zones',
+          icon: MapPin,
+          href: '/zones',
           wip: true,
           wipPhase: 2,
         },
@@ -160,52 +178,11 @@ function getSuperAdminNav(): NavSection[] {
           href: '/notifications',
         },
         {
-          id: 'audit',
-          label: 'Audit Logs',
-          labelKey: 'nav.audit',
-          icon: ClipboardList,
-          href: '/audit',
-        },
-        {
-          id: 'settings',
-          label: 'Settings',
-          labelKey: 'nav.settings',
-          icon: Settings,
-          href: '/settings',
-        },
-      ],
-    },
-    {
-      id: 'future',
-      title: 'Coming Soon',
-      titleKey: 'nav.section.future',
-      items: [
-        {
-          id: 'stock',
-          label: 'Stock & Materials',
-          labelKey: 'nav.stock',
-          icon: Package,
-          href: '/stock',
-          wip: true,
-          wipPhase: 2,
-        },
-        {
-          id: 'billing',
-          label: 'Billing',
-          labelKey: 'nav.billing',
-          icon: Receipt,
-          href: '/billing',
-          wip: true,
-          wipPhase: 2,
-        },
-        {
           id: 'reports',
           label: 'Reports',
-          labelKey: 'nav.reports',
-          icon: BarChart3,
+          labelKey: 'nav.issueReports',
+          icon: FileWarning,
           href: '/reports',
-          wip: true,
-          wipPhase: 2,
         },
       ],
     },
@@ -215,7 +192,9 @@ function getSuperAdminNav(): NavSection[] {
 function getAdminNav(): NavSection[] {
   return [
     {
-      id: 'main',
+      id: 'principal',
+      title: 'Principal',
+      titleKey: 'nav.section.principal',
       items: [
         {
           id: 'dashboard',
@@ -239,7 +218,6 @@ function getAdminNav(): NavSection[] {
           children: [
             { id: 'users-supervisors', label: 'Supervisors', labelKey: 'nav.users.supervisors', icon: UserCog, href: '/users/supervisors' },
             { id: 'users-agents', label: 'Agents', labelKey: 'nav.users.agents', icon: UserCheck, href: '/users/agents' },
-            { id: 'users-client-accounts', label: 'Client Accounts', labelKey: 'nav.users.clientAccounts', icon: User, href: '/users/clients' },
           ],
         },
         {
@@ -247,14 +225,22 @@ function getAdminNav(): NavSection[] {
           label: 'Clients',
           labelKey: 'nav.clients',
           icon: Building2,
-          href: '/clients',
+          children: [
+            { id: 'clients-all', label: 'All Clients', labelKey: 'nav.clients.all', icon: Building2, href: '/clients' },
+            { id: 'clients-companies', label: 'Companies', labelKey: 'nav.clients.companies', icon: Building2, href: '/clients/companies' },
+            { id: 'clients-individuals', label: 'Individuals', labelKey: 'nav.clients.individuals', icon: User, href: '/clients/individuals' },
+          ],
         },
         {
           id: 'contracts',
           label: 'Contracts',
           labelKey: 'nav.contracts',
           icon: FileText,
-          href: '/contracts',
+          children: [
+            { id: 'contracts-all', label: 'All Contracts', labelKey: 'nav.contracts.all', icon: FileText, href: '/contracts' },
+            { id: 'contracts-permanent', label: 'Permanent', labelKey: 'nav.contracts.permanent', icon: FileText, href: '/contracts/permanent' },
+            { id: 'contracts-punctual', label: 'One-time', labelKey: 'nav.contracts.punctual', icon: FileText, href: '/contracts/punctual' },
+          ],
         },
         {
           id: 'sites',
@@ -271,18 +257,34 @@ function getAdminNav(): NavSection[] {
       titleKey: 'nav.section.operations',
       items: [
         {
-          id: 'planning',
-          label: 'Planning',
-          labelKey: 'nav.planning',
+          id: 'interventions',
+          label: 'Interventions',
+          labelKey: 'nav.interventions',
           icon: Calendar,
-          href: '/planning',
+          children: [
+            { id: 'interventions-list', label: 'List', labelKey: 'nav.interventions.list', icon: ClipboardList, href: '/interventions' },
+            { id: 'interventions-planning', label: 'Planning', labelKey: 'nav.interventions.planning', icon: Calendar, href: '/planning' },
+          ],
         },
         {
           id: 'personnel',
           label: 'Personnel',
           labelKey: 'nav.personnel',
           icon: UsersRound,
-          href: '/personnel',
+          children: [
+            { id: 'personnel-employees', label: 'Employees', labelKey: 'nav.personnel.employees', icon: UsersRound, href: '/personnel' },
+            { id: 'personnel-absences', label: 'Absences', labelKey: 'nav.personnel.absences', icon: Calendar, href: '/personnel/absences' },
+            { id: 'personnel-attendance', label: 'Attendance', labelKey: 'nav.personnel.attendance', icon: Clock, href: '/personnel/attendance' },
+          ],
+        },
+        {
+          id: 'zones',
+          label: 'Zones',
+          labelKey: 'nav.zones',
+          icon: MapPin,
+          href: '/zones',
+          wip: true,
+          wipPhase: 2,
         },
       ],
     },
@@ -299,11 +301,11 @@ function getAdminNav(): NavSection[] {
           href: '/notifications',
         },
         {
-          id: 'settings',
-          label: 'Settings',
-          labelKey: 'nav.settings',
-          icon: Settings,
-          href: '/settings',
+          id: 'reports',
+          label: 'Reports',
+          labelKey: 'nav.issueReports',
+          icon: FileWarning,
+          href: '/reports',
         },
       ],
     },
@@ -356,6 +358,13 @@ function getSupervisorNav(): NavSection[] {
       id: 'system',
       items: [
         {
+          id: 'reports',
+          label: 'Reports',
+          labelKey: 'nav.issueReports',
+          icon: ClipboardList,
+          href: '/reports',
+        },
+        {
           id: 'notifications',
           label: 'Notifications',
           labelKey: 'nav.notifications',
@@ -392,6 +401,13 @@ function getAgentNav(): NavSection[] {
           labelKey: 'nav.mySchedule',
           icon: Clock,
           href: '/my-schedule',
+        },
+        {
+          id: 'request-leave',
+          label: 'Request Leave',
+          labelKey: 'nav.requestLeave',
+          icon: CalendarDays,
+          href: '/absence-request',
         },
       ],
     },

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { authApi, setToken, getToken, clearAuth, setStoredUser, getStoredUser, ApiError } from '@/services/api'
+import { authApi, attendanceApi, setToken, getToken, clearAuth, setStoredUser, getStoredUser, ApiError } from '@/services/api'
 
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'SUPERVISOR' | 'AGENT' | 'CLIENT'
 
@@ -127,10 +127,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
   
   /**
-   * Logout - clear all auth state
+   * Logout - clear all auth state, end shift if active, dispatch event for other components
    */
-  const logout = () => {
+  const logout = async () => {
+    // Try to clock out if user is on shift (for agents/supervisors/admins)
+    if (user && ['AGENT', 'SUPERVISOR', 'ADMIN'].includes(user.role)) {
+      try {
+        const status = await attendanceApi.getStatus()
+        if (status.isOnShift) {
+          await attendanceApi.clockOut({})
+          console.log('Auto clocked out on logout')
+        }
+      } catch (err) {
+        // Ignore errors - user might not have an active shift
+        console.log('No active shift to end on logout')
+      }
+    }
+    
+    // Dispatch logout event before clearing state so components can clean up
+    window.dispatchEvent(new CustomEvent('userLogout'))
     clearAuth()
+    // Clear session storage for welcome toast
+    sessionStorage.removeItem('welcomeShown')
     setUser(null)
     setError(null)
   }

@@ -67,7 +67,7 @@ export class DashboardService {
     ] = await Promise.all([
       this.clientRepository.count(),
       this.clientRepository.count({
-        where: { status: ClientStatus.ACTIVE },
+        where: { status: ClientStatus.CURRENT },
       }),
       this.siteRepository.count(),
       this.siteRepository.count({
@@ -509,7 +509,7 @@ export class DashboardService {
       totalContracts,
       interventions,
     ] = await Promise.all([
-      this.clientRepository.count({ where: { status: ClientStatus.ACTIVE } }),
+      this.clientRepository.count({ where: { status: ClientStatus.CURRENT } }),
       this.contractRepository.count({
         where: { status: ContractStatus.ACTIVE },
       }),

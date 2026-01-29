@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, User, Settings, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { getNavigationConfig, NavItem, NavSection } from '@/config/navigation'
@@ -15,9 +15,23 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle, onWipClick }: SidebarProps) {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   if (!user) return null
 
@@ -37,7 +51,14 @@ export function Sidebar({ collapsed, onToggle, onWipClick }: SidebarProps) {
 
   const isActive = (href?: string) => {
     if (!href) return false
-    return location.pathname === href || location.pathname.startsWith(href + '/')
+    // Exact match
+    if (location.pathname === href) return true
+    // For routes like /users, only match exactly - don't match /users/admins
+    // For routes like /users/admins, match /users/admins and /users/admins/xxx
+    if (href === '/users' || href === '/clients') {
+      return location.pathname === href
+    }
+    return location.pathname.startsWith(href + '/')
   }
 
   const isChildActive = (item: NavItem) => {
@@ -184,11 +205,80 @@ export function Sidebar({ collapsed, onToggle, onWipClick }: SidebarProps) {
         {navSections.map((section, index) => renderSection(section, index))}
       </div>
 
-      {/* Collapse toggle */}
-      <div className="shrink-0 border-t border-gray-200 p-2 dark:border-gray-800">
+      {/* User Profile Section */}
+      <div className="shrink-0 border-t border-gray-200 dark:border-gray-700" ref={userMenuRef}>
+        <div className="relative">
+          <button
+            onClick={() => !collapsed && setShowUserMenu(!showUserMenu)}
+            className={cn(
+              'flex w-full items-center gap-3 p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800',
+              collapsed && 'justify-center'
+            )}
+          >
+            {/* Avatar */}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-semibold text-white">
+              {user?.firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+            {!collapsed && (
+              <>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'User'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {t(`roles.${user?.role}`, user?.role)}
+                  </p>
+                </div>
+                <ChevronUp className={cn('h-4 w-4 text-gray-400 transition-transform', showUserMenu && 'rotate-180')} />
+              </>
+            )}
+          </button>
+
+          {/* User dropdown menu */}
+          {showUserMenu && !collapsed && (
+            <div className="absolute bottom-full left-0 right-0 mb-1 mx-2 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+              <button
+                onClick={() => {
+                  navigate('/profile')
+                  setShowUserMenu(false)
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <User className="h-4 w-4" />
+                {t('menu.profile', 'My Profile')}
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/settings')
+                  setShowUserMenu(false)
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <Settings className="h-4 w-4" />
+                {t('menu.settings', 'Settings')}
+              </button>
+              <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+              <button
+                onClick={() => {
+                  logout()
+                  setShowUserMenu(false)
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+              >
+                <LogOut className="h-4 w-4" />
+                {t('menu.logout', 'Logout')}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Collapse toggle */}
         <button
           onClick={onToggle}
-          className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          className={cn(
+            'flex w-full items-center gap-2 border-t border-gray-100 px-3 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800',
+            collapsed && 'justify-center'
+          )}
           title={collapsed ? t('nav.expand', 'Expand sidebar') : t('nav.collapse', 'Collapse sidebar')}
         >
           {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}

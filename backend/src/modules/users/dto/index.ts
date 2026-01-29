@@ -7,6 +7,7 @@ export {
   BatchUpdateItem,
   BatchIdsDto,
 } from './batch-operations.dto';
+export { AdminResetPasswordDto, ResetPasswordMode } from './admin-reset-password.dto';
 
 // Profile DTOs
 export {
