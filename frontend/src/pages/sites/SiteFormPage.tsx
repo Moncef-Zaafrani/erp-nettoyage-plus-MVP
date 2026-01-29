@@ -397,7 +397,7 @@ export function SiteFormPage() {
       <div className="sticky top-[53px] z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="px-4 sm:px-6 py-2">
           <div className="flex items-center gap-1 overflow-x-auto">
-            {formSections.map((section, index) => {
+            {formSections.map((section) => {
               const Icon = section.icon
               const isActive = activeSection === section.id
               return (

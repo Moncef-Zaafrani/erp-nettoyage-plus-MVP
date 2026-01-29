@@ -128,7 +128,7 @@ export function SitesPage() {
   useEffect(() => {
     async function fetchClients() {
       try {
-        const response = await clientsApi.getAll({ limit: 100, status: 'ACTIVE' })
+        const response = await clientsApi.getAll({ limit: 100, status: 'CURRENT' })
         setClients(response.data || [])
       } catch (err) {
         console.error('Failed to fetch clients:', err)

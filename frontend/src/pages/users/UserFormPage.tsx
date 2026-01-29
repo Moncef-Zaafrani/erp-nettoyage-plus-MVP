@@ -12,7 +12,6 @@ import {
   Shield,
   UserCog,
   UserCheck,
-  Building2,
   User as UserIcon,
 } from 'lucide-react'
 import { usersApi, User, CreateUserRequest, UpdateUserRequest } from '@/services/api'
