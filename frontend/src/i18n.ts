@@ -1003,9 +1003,16 @@ const resources = {
       'contracts.status.INACTIVE': 'Inactive',
       'contracts.status.COMPLETED': 'Completed',
       'contracts.status.ARCHIVED': 'Archived',
+      'contracts.status.draft': 'Draft',
+      'contracts.status.active': 'Active',
+      'contracts.status.inactive': 'Inactive',
+      'contracts.status.completed': 'Completed',
+      'contracts.status.archived': 'Archived',
       // Contracts - Type
       'contracts.type.PERMANENT': 'Permanent',
       'contracts.type.ONE_TIME': 'One-time',
+      'contracts.type.permanent': 'Permanent',
+      'contracts.type.oneTime': 'One-time',
       // Contracts - Frequency
       'contracts.frequency.DAILY': 'Daily',
       'contracts.frequency.WEEKLY': 'Weekly',
@@ -1013,6 +1020,12 @@ const resources = {
       'contracts.frequency.MONTHLY': 'Monthly',
       'contracts.frequency.QUARTERLY': 'Quarterly',
       'contracts.frequency.CUSTOM': 'Custom',
+      'contracts.frequency.daily': 'Daily',
+      'contracts.frequency.weekly': 'Weekly',
+      'contracts.frequency.biweekly': 'Bi-weekly',
+      'contracts.frequency.monthly': 'Monthly',
+      'contracts.frequency.quarterly': 'Quarterly',
+      'contracts.frequency.custom': 'Custom',
       // Contracts - Filters
       'contracts.filters.status': 'Status',
       'contracts.filters.type': 'Type',
@@ -1147,6 +1160,11 @@ const resources = {
       'contracts.form.billingCycle': 'Billing Cycle',
       'contracts.form.paymentTerms': 'Payment Terms',
       'contracts.form.paymentTermsPlaceholder': 'e.g., Net 30, Due on receipt',
+      // Contracts - Billing Cycle Options
+      'contracts.billing.weekly': 'Weekly',
+      'contracts.billing.monthly': 'Monthly',
+      'contracts.billing.quarterly': 'Quarterly',
+      'contracts.billing.annually': 'Annually',
       // Contracts - Form Scope Section
       'contracts.form.scope': 'Service Scope',
       'contracts.form.zones': 'Zones',
@@ -2434,9 +2452,16 @@ const resources = {
       'contracts.status.INACTIVE': 'Inactif',
       'contracts.status.COMPLETED': 'Terminé',
       'contracts.status.ARCHIVED': 'Archivé',
+      'contracts.status.draft': 'Brouillon',
+      'contracts.status.active': 'Actif',
+      'contracts.status.inactive': 'Inactif',
+      'contracts.status.completed': 'Terminé',
+      'contracts.status.archived': 'Archivé',
       // Contracts - Type
       'contracts.type.PERMANENT': 'Permanent',
       'contracts.type.ONE_TIME': 'Ponctuel',
+      'contracts.type.permanent': 'Permanent',
+      'contracts.type.oneTime': 'Ponctuel',
       // Contracts - Frequency
       'contracts.frequency.DAILY': 'Quotidien',
       'contracts.frequency.WEEKLY': 'Hebdomadaire',
@@ -2444,6 +2469,12 @@ const resources = {
       'contracts.frequency.MONTHLY': 'Mensuel',
       'contracts.frequency.QUARTERLY': 'Trimestriel',
       'contracts.frequency.CUSTOM': 'Personnalisé',
+      'contracts.frequency.daily': 'Quotidien',
+      'contracts.frequency.weekly': 'Hebdomadaire',
+      'contracts.frequency.biweekly': 'Bi-hebdomadaire',
+      'contracts.frequency.monthly': 'Mensuel',
+      'contracts.frequency.quarterly': 'Trimestriel',
+      'contracts.frequency.custom': 'Personnalisé',
       // Contracts - Filters
       'contracts.filters.status': 'Statut',
       'contracts.filters.type': 'Type',
@@ -2578,6 +2609,11 @@ const resources = {
       'contracts.form.billingCycle': 'Cycle de facturation',
       'contracts.form.paymentTerms': 'Conditions de paiement',
       'contracts.form.paymentTermsPlaceholder': 'ex: Net 30, Paiement à réception',
+      // Contracts - Billing Cycle Options
+      'contracts.billing.weekly': 'Hebdomadaire',
+      'contracts.billing.monthly': 'Mensuel',
+      'contracts.billing.quarterly': 'Trimestriel',
+      'contracts.billing.annually': 'Annuel',
       // Contracts - Form Scope Section
       'contracts.form.scope': 'Périmètre du service',
       'contracts.form.zones': 'Zones',

@@ -202,10 +202,14 @@ export function SearchableSelect({
               <input
                 ref={inputRef}
                 type="text"
+                id={id ? `${id}-search` : undefined}
+                name={name ? `${name}-search` : undefined}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                autoComplete="off"
                 className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
