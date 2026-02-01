@@ -389,7 +389,6 @@ const resources = {
       'common.retry': 'Retry',
       'common.close': 'Close',
       'common.confirm': 'Confirm',
-      'common.processing': 'Processing...',
       'common.back': 'Back',
       'common.next': 'Next',
       'common.done': 'Done',

@@ -110,6 +110,7 @@ function SettingsSection({
   id?: string
   isWip?: boolean
 }) {
+  const { t } = useTranslation()
   return (
     <section id={id} className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <div className="border-b border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6">
