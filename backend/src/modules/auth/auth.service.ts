@@ -78,7 +78,10 @@ export class AuthService {
     }
 
     // Check if user is active
-    if (user.status !== UserStatus.ACTIVE) {
+    // ACTIVE is for employees (Admin, Supervisor, Agent)
+    // CURRENT is for clients
+    const allowedStatuses = [UserStatus.ACTIVE, UserStatus.CURRENT];
+    if (!allowedStatuses.includes(user.status)) {
       throw new UnauthorizedException(
         'Your account is not active. Please contact support.',
       );
@@ -108,10 +111,14 @@ export class AuthService {
 
   /**
    * Get user by ID (for JWT validation)
+   * Allows both ACTIVE (employees) and CURRENT (clients) statuses
    */
   async validateUser(userId: string): Promise<User | null> {
     return this.userRepository.findOne({
-      where: { id: userId, status: UserStatus.ACTIVE },
+      where: [
+        { id: userId, status: UserStatus.ACTIVE },
+        { id: userId, status: UserStatus.CURRENT },
+      ],
     });
   }
 
