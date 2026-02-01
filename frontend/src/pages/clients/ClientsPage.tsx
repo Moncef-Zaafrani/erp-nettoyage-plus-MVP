@@ -135,6 +135,15 @@ export function ClientsPage() {
         filteredClients = filteredClients.filter(c => statusFilter.includes(c.status))
       }
 
+      // Sort archived clients to the bottom while maintaining other sort order
+      filteredClients.sort((a, b) => {
+        // Archived clients always go to the bottom
+        if (a.status === 'ARCHIVED' && b.status !== 'ARCHIVED') return 1
+        if (a.status !== 'ARCHIVED' && b.status === 'ARCHIVED') return -1
+        // Both same archive status - maintain original order (already sorted by backend)
+        return 0
+      })
+
       setClients(filteredClients)
       setTotalCount(response.total || filteredClients.length)
     } catch (err: any) {

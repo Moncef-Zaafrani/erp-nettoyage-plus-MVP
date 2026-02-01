@@ -1397,20 +1397,22 @@ export const clientsApi = {
   },
 
   /**
-   * Soft delete (archive) a client
+   * Archive a client (set status to ARCHIVED - client remains visible)
    */
-  archive: async (id: string): Promise<{ success: boolean }> => {
-    return request<{ success: boolean }>(`/clients/${id}`, {
-      method: 'DELETE',
+  archive: async (id: string): Promise<Client> => {
+    return request<Client>(`/clients/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'ARCHIVED' }),
     })
   },
 
   /**
-   * Restore an archived client
+   * Restore an archived client (set status back to CURRENT)
    */
   restore: async (id: string): Promise<Client> => {
-    return request<Client>(`/clients/${id}/restore`, {
-      method: 'POST',
+    return request<Client>(`/clients/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'CURRENT' }),
     })
   },
 
@@ -1427,13 +1429,14 @@ export const clientsApi = {
   },
 
   /**
-   * Batch archive (soft delete) clients
+   * Batch archive clients (update status to ARCHIVED via batch update)
    */
   batchArchive: async (ids: string[]): Promise<{ success: boolean; count: number }> => {
-    return request<{ deleted: string[]; errors: any[] }>('/clients/batch/delete', {
-      method: 'POST',
-      body: JSON.stringify({ ids }),
-    }).then(res => ({ success: true, count: res.deleted?.length || ids.length }))
+    const clients = ids.map(id => ({ id, status: 'ARCHIVED' as const }))
+    return request<{ success: boolean; count: number }>('/clients/batch/update', {
+      method: 'PATCH',
+      body: JSON.stringify({ clients }),
+    }).then(() => ({ success: true, count: ids.length }))
   },
 
   /**

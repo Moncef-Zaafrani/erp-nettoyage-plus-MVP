@@ -127,14 +127,23 @@ export function ClientCard({
       className={`relative rounded-xl border-2 transition-all cursor-pointer shadow-sm ${
         isSelected
           ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-2 ring-emerald-500/30'
-          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
+          : client.status === 'ARCHIVED'
+            ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 opacity-75 hover:opacity-100 hover:border-gray-400 dark:hover:border-gray-500'
+            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
       }`}
     >
+      {/* Archived Indicator Banner */}
+      {client.status === 'ARCHIVED' && (
+        <div className="absolute top-0 left-0 right-0 bg-gray-500 dark:bg-gray-600 text-white text-xs font-medium text-center py-0.5 rounded-t-lg">
+          {t('clients.status.archived', 'Archived')}
+        </div>
+      )}
+      
       {/* Selection Checkbox */}
       {selectionMode && (
         <div
           onClick={handleCheckboxClick}
-          className={`absolute top-3 left-3 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
+          className={`absolute ${client.status === 'ARCHIVED' ? 'top-8' : 'top-3'} left-3 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
             isSelected
               ? 'bg-emerald-500 border-emerald-500'
               : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500 hover:border-emerald-500'
@@ -145,7 +154,7 @@ export function ClientCard({
       )}
 
       {/* Header with Avatar and Menu */}
-      <div className="p-4 pb-3">
+      <div className={`p-4 pb-3 ${client.status === 'ARCHIVED' ? 'pt-8' : ''}`}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Avatar / Icon */}
