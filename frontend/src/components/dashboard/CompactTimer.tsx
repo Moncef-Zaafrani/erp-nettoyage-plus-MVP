@@ -144,7 +144,7 @@ export function CompactTimer() {
         <div className="mb-2 rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 overflow-hidden animate-in slide-in-from-bottom-2 duration-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700">
             <span className="text-sm font-medium text-gray-900 dark:text-white">
-              {t('timer.quickTimer', 'Quick Timer')}
+              {t('dashboard.quickTimer', 'Quick Timer')}
             </span>
             <button
               onClick={() => setExpanded(false)}
@@ -163,7 +163,7 @@ export function CompactTimer() {
               {timer.isRunning && (
                 <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center justify-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  {t('timer.running', 'Running')}
+                  {t('dashboard.timerRunning', 'Running')}
                 </p>
               )}
             </div>
@@ -173,7 +173,7 @@ export function CompactTimer() {
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value.slice(0, 50))}
-              placeholder={t('timer.labelPlaceholder', 'What are you working on?')}
+              placeholder={t('dashboard.timerLabel', 'What are you timing? (optional)')}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 dark:border-gray-700 dark:bg-gray-900 dark:text-white outline-none mb-3"
             />
 
@@ -190,12 +190,12 @@ export function CompactTimer() {
                 {timer.isRunning ? (
                   <>
                     <Pause className="h-4 w-4" />
-                    {t('timer.pause', 'Pause')}
+                    {t('common.pause', 'Pause')}
                   </>
                 ) : (
                   <>
                     <Play className="h-4 w-4" />
-                    {elapsed > 0 ? t('timer.resume', 'Resume') : t('timer.start', 'Start')}
+                    {elapsed > 0 ? t('dashboard.timerResume', 'Resume') : t('dashboard.timerStart', 'Start')}
                   </>
                 )}
               </button>
@@ -203,7 +203,7 @@ export function CompactTimer() {
                 <button
                   onClick={handleReset}
                   className="px-3 py-2.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 transition-colors"
-                  title={t('timer.reset', 'Reset')}
+                  title={t('dashboard.timerReset', 'Reset')}
                 >
                   <RotateCcw className="h-4 w-4" />
                 </button>

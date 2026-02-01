@@ -29,61 +29,61 @@ import {
   AbsenceStatus,
 } from '@/services/api'
 
-// Absence type config with colors and icons
-const absenceTypeConfig: Record<AbsenceType, { label: string; color: string; bgLight: string; icon: React.ReactNode }> = {
+// Absence type config with translation keys, colors and icons
+const absenceTypeConfig: Record<AbsenceType, { labelKey: string; color: string; bgLight: string; icon: React.ReactNode }> = {
   VACATION: {
-    label: 'Vacation',
+    labelKey: 'absences.type.VACATION',
     color: 'bg-sky-500',
     bgLight: 'bg-sky-50 dark:bg-sky-900/20',
     icon: <Palmtree className="h-4 w-4" />,
   },
   SICK_LEAVE: {
-    label: 'Sick Leave',
+    labelKey: 'absences.type.SICK_LEAVE',
     color: 'bg-rose-500',
     bgLight: 'bg-rose-50 dark:bg-rose-900/20',
     icon: <Stethoscope className="h-4 w-4" />,
   },
   UNPAID: {
-    label: 'Unpaid Leave',
+    labelKey: 'absences.type.UNPAID',
     color: 'bg-gray-500',
     bgLight: 'bg-gray-50 dark:bg-gray-800',
     icon: <CalendarOff className="h-4 w-4" />,
   },
   AUTHORIZED: {
-    label: 'Authorized',
+    labelKey: 'absences.type.AUTHORIZED',
     color: 'bg-emerald-500',
     bgLight: 'bg-emerald-50 dark:bg-emerald-900/20',
     icon: <CalendarCheck className="h-4 w-4" />,
   },
   UNAUTHORIZED: {
-    label: 'Unauthorized',
+    labelKey: 'absences.type.UNAUTHORIZED',
     color: 'bg-red-600',
     bgLight: 'bg-red-50 dark:bg-red-900/20',
     icon: <CalendarX2 className="h-4 w-4" />,
   },
 }
 
-const statusConfig: Record<AbsenceStatus, { label: string; color: string; textColor: string; icon: React.ReactNode }> = {
+const statusConfig: Record<AbsenceStatus, { labelKey: string; color: string; textColor: string; icon: React.ReactNode }> = {
   PENDING: {
-    label: 'Pending',
+    labelKey: 'absences.status.PENDING',
     color: 'bg-amber-100 dark:bg-amber-900/30',
     textColor: 'text-amber-700 dark:text-amber-400',
     icon: <Clock className="h-4 w-4" />,
   },
   APPROVED: {
-    label: 'Approved',
+    labelKey: 'absences.status.APPROVED',
     color: 'bg-emerald-100 dark:bg-emerald-900/30',
     textColor: 'text-emerald-700 dark:text-emerald-400',
     icon: <CheckCircle2 className="h-4 w-4" />,
   },
   REJECTED: {
-    label: 'Rejected',
+    labelKey: 'absences.status.REJECTED',
     color: 'bg-red-100 dark:bg-red-900/30',
     textColor: 'text-red-700 dark:text-red-400',
     icon: <XCircle className="h-4 w-4" />,
   },
   CANCELLED: {
-    label: 'Cancelled',
+    labelKey: 'absences.status.CANCELLED',
     color: 'bg-gray-100 dark:bg-gray-700',
     textColor: 'text-gray-600 dark:text-gray-400',
     icon: <X className="h-4 w-4" />,
@@ -385,7 +385,7 @@ export function AbsencesPage() {
                           <div
                             key={j}
                             className={`w-2 h-2 rounded-full ${absenceTypeConfig[absence.absenceType].color}`}
-                            title={`${absence.agent?.firstName} ${absence.agent?.lastName} - ${absenceTypeConfig[absence.absenceType].label}`}
+                            title={`${absence.agent?.firstName} ${absence.agent?.lastName} - ${t(absenceTypeConfig[absence.absenceType].labelKey)}`}
                           />
                         ))}
                         {dayAbsences.length > 3 && (
@@ -404,7 +404,7 @@ export function AbsencesPage() {
             {Object.entries(absenceTypeConfig).map(([type, config]) => (
               <div key={type} className="flex items-center gap-2 text-sm">
                 <div className={`w-3 h-3 rounded-full ${config.color}`} />
-                <span className="text-gray-600 dark:text-gray-400">{config.label}</span>
+                <span className="text-gray-600 dark:text-gray-400">{t(config.labelKey)}</span>
               </div>
             ))}
           </div>
@@ -454,7 +454,7 @@ export function AbsencesPage() {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {typeConfig.label} • {absence.totalDays} {absence.totalDays === 1 ? 'day' : 'days'}
+                          {t(typeConfig.labelKey)} • {absence.totalDays} {absence.totalDays === 1 ? t('absences.day', 'day') : t('absences.days', 'days')}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">
                           {new Date(absence.startDate).toLocaleDateString()} - {new Date(absence.endDate).toLocaleDateString()}
@@ -528,7 +528,7 @@ export function AbsencesPage() {
               <option value="ALL">{t('absences.allTypes', 'All Types')}</option>
               {Object.entries(absenceTypeConfig).map(([type, config]) => (
                 <option key={type} value={type}>
-                  {config.label}
+                  {t(config.labelKey)}
                 </option>
               ))}
             </select>
@@ -598,7 +598,7 @@ export function AbsencesPage() {
                             {typeConfig.icon}
                           </div>
                           <span className="text-gray-900 dark:text-white text-sm">
-                            {typeConfig.label}
+                            {t(typeConfig.labelKey)}
                           </span>
                         </div>
                       </td>
@@ -612,13 +612,13 @@ export function AbsencesPage() {
                       </td>
                       <td className="px-4 py-4">
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {absence.totalDays} {absence.totalDays === 1 ? 'day' : 'days'}
+                          {absence.totalDays} {absence.totalDays === 1 ? t('absences.day', 'day') : t('absences.days', 'days')}
                         </span>
                       </td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusCfg.color} ${statusCfg.textColor}`}>
                           {statusCfg.icon}
-                          {statusCfg.label}
+                          {t(statusCfg.labelKey)}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">

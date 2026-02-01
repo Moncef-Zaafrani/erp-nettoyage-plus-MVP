@@ -18,35 +18,35 @@ import {
 import { absencesApi, AbsenceType, AbsenceBalance } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
 
-// Absence type options with visual config
-const absenceTypes: { type: AbsenceType; label: string; icon: React.ReactNode; color: string; description: string }[] = [
+// Absence type options with translation keys and visual config
+const absenceTypes: { type: AbsenceType; labelKey: string; icon: React.ReactNode; color: string; descriptionKey: string }[] = [
   {
     type: 'VACATION',
-    label: 'Vacation',
+    labelKey: 'absences.type.VACATION',
     icon: <Palmtree className="h-6 w-6" />,
     color: 'bg-sky-500 text-white',
-    description: 'Annual paid leave',
+    descriptionKey: 'absences.typeDesc.VACATION',
   },
   {
     type: 'SICK_LEAVE',
-    label: 'Sick Leave',
+    labelKey: 'absences.type.SICK_LEAVE',
     icon: <Stethoscope className="h-6 w-6" />,
     color: 'bg-rose-500 text-white',
-    description: 'Medical absence',
+    descriptionKey: 'absences.typeDesc.SICK_LEAVE',
   },
   {
     type: 'UNPAID',
-    label: 'Unpaid Leave',
+    labelKey: 'absences.type.UNPAID',
     icon: <CalendarOff className="h-6 w-6" />,
     color: 'bg-gray-500 text-white',
-    description: 'Leave without pay',
+    descriptionKey: 'absences.typeDesc.UNPAID',
   },
   {
     type: 'AUTHORIZED',
-    label: 'Authorized Absence',
+    labelKey: 'absences.type.AUTHORIZED',
     icon: <CalendarCheck className="h-6 w-6" />,
     color: 'bg-emerald-500 text-white',
-    description: 'Pre-approved absence',
+    descriptionKey: 'absences.typeDesc.AUTHORIZED',
   },
 ]
 
@@ -254,10 +254,10 @@ export function AbsenceRequestPage() {
                           ? 'text-primary-700 dark:text-primary-300'
                           : 'text-gray-900 dark:text-white'
                       }`}>
-                        {option.label}
+                        {t(option.labelKey)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        {option.description}
+                        {t(option.descriptionKey)}
                       </p>
                     </div>
                   </div>
