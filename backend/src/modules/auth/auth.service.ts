@@ -77,13 +77,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Check if user is active
-    // ACTIVE is for employees (Admin, Supervisor, Agent)
-    // CURRENT is for clients
-    const allowedStatuses = [UserStatus.ACTIVE, UserStatus.CURRENT];
-    if (!allowedStatuses.includes(user.status)) {
+    // Check if user is archived (soft-deleted)
+    // All other statuses can login:
+    // - Employees: ACTIVE (on duty), INACTIVE (off duty)
+    // - Clients: CURRENT (has contract), FORMER (contract ended)
+    if (user.status === UserStatus.ARCHIVED) {
       throw new UnauthorizedException(
-        'Your account is not active. Please contact support.',
+        'Your account has been archived. Please contact support.',
       );
     }
 
@@ -111,15 +111,19 @@ export class AuthService {
 
   /**
    * Get user by ID (for JWT validation)
-   * Allows both ACTIVE (employees) and CURRENT (clients) statuses
+   * Only ARCHIVED users are blocked from accessing the system
    */
   async validateUser(userId: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: [
-        { id: userId, status: UserStatus.ACTIVE },
-        { id: userId, status: UserStatus.CURRENT },
-      ],
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
     });
+    
+    // Block archived users
+    if (user && user.status === UserStatus.ARCHIVED) {
+      return null;
+    }
+    
+    return user;
   }
 
   /**
