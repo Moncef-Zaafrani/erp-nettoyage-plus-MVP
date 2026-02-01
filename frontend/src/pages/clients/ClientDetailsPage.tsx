@@ -259,10 +259,11 @@ export function ClientDetailsPage() {
                         )}
                       </button>
                     )}
-                    {/* Password Reset - Only for clients with linked user account */}
-                    {client.userId && canEdit && (
+                    {/* Password Reset - for clients with linked user account */}
+                    {canEdit && (
                       <button
                         onClick={async () => {
+                          if (!client.userId) return
                           setShowActionsMenu(false)
                           setActionLoading(true)
                           try {
@@ -274,17 +275,24 @@ export function ClientDetailsPage() {
                             setActionLoading(false)
                           }
                         }}
-                        disabled={actionLoading}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        disabled={actionLoading || !client.userId}
+                        title={!client.userId ? t('clients.actions.noAccountTooltip', 'This client has no login account') : ''}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${
+                          client.userId
+                            ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                        }`}
                       >
                         <Key className="h-4 w-4" />
                         {t('clients.actions.resetPassword', 'Reset Password')}
+                        {!client.userId && <span className="text-xs ml-auto">{t('clients.actions.noAccount', 'No account')}</span>}
                       </button>
                     )}
-                    {/* Send Verification - Only for clients with linked user account */}
-                    {client.userId && canEdit && (
+                    {/* Send Verification - for clients with linked user account */}
+                    {canEdit && (
                       <button
                         onClick={async () => {
+                          if (!client.userId) return
                           setShowActionsMenu(false)
                           setActionLoading(true)
                           try {
@@ -296,11 +304,17 @@ export function ClientDetailsPage() {
                             setActionLoading(false)
                           }
                         }}
-                        disabled={actionLoading}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        disabled={actionLoading || !client.userId}
+                        title={!client.userId ? t('clients.actions.noAccountTooltip', 'This client has no login account') : ''}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${
+                          client.userId
+                            ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                        }`}
                       >
                         <Send className="h-4 w-4" />
                         {t('clients.actions.sendVerification', 'Send Verification Email')}
+                        {!client.userId && <span className="text-xs ml-auto">{t('clients.actions.noAccount', 'No account')}</span>}
                       </button>
                     )}
                   </div>

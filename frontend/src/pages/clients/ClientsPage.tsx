@@ -422,17 +422,24 @@ export function ClientsPage() {
             >
               {t('clients.batchArchive', 'Archive')}
             </button>
-            {/* Send Verification Email - only if at least one selected client has a user account */}
-            {selectedClientsWithAccounts > 0 && (
-              <button
-                onClick={handleBatchSendVerification}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                title={t('clients.batch.sendVerificationTooltip', 'Send verification email to {{count}} client(s) with accounts').replace('{{count}}', String(selectedClientsWithAccounts))}
-              >
-                <Send className="h-4 w-4" />
-                {t('clients.batch.sendVerification', 'Send Verification')} ({selectedClientsWithAccounts})
-              </button>
-            )}
+            {/* Send Verification Email button - always visible but disabled if no clients have accounts */}
+            <button
+              onClick={handleBatchSendVerification}
+              disabled={selectedClientsWithAccounts === 0}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg ${
+                selectedClientsWithAccounts > 0
+                  ? 'text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                  : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
+              }`}
+              title={selectedClientsWithAccounts === 0 
+                ? t('clients.batch.noAccountsTooltip', 'No selected clients have login accounts')
+                : t('clients.batch.sendVerificationTooltip', 'Send verification email to {{count}} client(s) with accounts').replace('{{count}}', String(selectedClientsWithAccounts))
+              }
+            >
+              <Send className="h-4 w-4" />
+              {t('clients.batch.sendVerification', 'Send Verification')}
+              {selectedClientsWithAccounts > 0 && ` (${selectedClientsWithAccounts})`}
+            </button>
           </div>
         )}
       </div>

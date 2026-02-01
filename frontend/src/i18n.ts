@@ -825,8 +825,11 @@ const resources = {
       'clients.actions.sendVerification': 'Send Verification Email',
       'clients.actions.sendVerificationSuccess': 'Verification email sent successfully',
       'clients.actions.sendVerificationError': 'Failed to send verification email',
+      'clients.actions.noAccount': 'No account',
+      'clients.actions.noAccountTooltip': 'This client has no login account',
       'clients.batch.sendVerification': 'Send Verification',
       'clients.batch.sendVerificationTooltip': 'Send verification email to {{count}} client(s) with accounts',
+      'clients.batch.noAccountsTooltip': 'No selected clients have login accounts',
       // Clients - Types
       'clients.types.INDIVIDUAL': 'Individual',
       'clients.types.COMPANY': 'Company',
@@ -2349,8 +2352,11 @@ const resources = {
       'clients.actions.sendVerification': 'Envoyer l\'email de vérification',
       'clients.actions.sendVerificationSuccess': 'Email de vérification envoyé avec succès',
       'clients.actions.sendVerificationError': 'Échec de l\'envoi de l\'email de vérification',
+      'clients.actions.noAccount': 'Pas de compte',
+      'clients.actions.noAccountTooltip': 'Ce client n\'a pas de compte de connexion',
       'clients.batch.sendVerification': 'Envoyer vérification',
       'clients.batch.sendVerificationTooltip': 'Envoyer un email de vérification à {{count}} client(s) avec compte',
+      'clients.batch.noAccountsTooltip': 'Aucun client sélectionné n\'a de compte de connexion',
       // Clients - Types
       'clients.types.INDIVIDUAL': 'Particulier',
       'clients.types.COMPANY': 'Entreprise',
