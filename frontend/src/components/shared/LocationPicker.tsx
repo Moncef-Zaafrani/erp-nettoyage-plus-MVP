@@ -62,7 +62,7 @@ export function LocationPickerModal({
   value,
   onChange,
   onAddressSelect,
-  defaultCenter = { lat: 48.8566, lng: 2.3522 }, // Paris
+  defaultCenter = { lat: 18.0735, lng: -15.9582 }, // Nouakchott, Mauritania (company location)
   defaultZoom = 12,
 }: LocationPickerProps & { isOpen: boolean; onClose: () => void }) {
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
@@ -276,7 +276,7 @@ export function LocationPickerModal({
               
               {/* Search Results Dropdown */}
               {searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-[9999] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((result, index) => (
                     <button
                       key={index}
