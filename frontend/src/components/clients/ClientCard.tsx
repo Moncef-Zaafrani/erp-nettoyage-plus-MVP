@@ -44,10 +44,11 @@ const typeConfig: Record<ClientType, { icon: typeof Building2; color: string; bg
   MULTI_SITE: { icon: Building2, color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
 }
 
-// Status badge colors
+// Status badge colors (lifecycle: PROSPECT → CURRENT → FORMER → ARCHIVED)
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  CURRENT: { label: 'clients.status.current', color: 'text-green-700 dark:text-green-300', bgColor: 'bg-green-100 dark:bg-green-900/50' },
   PROSPECT: { label: 'clients.status.prospect', color: 'text-amber-700 dark:text-amber-300', bgColor: 'bg-amber-100 dark:bg-amber-900/50' },
+  CURRENT: { label: 'clients.status.current', color: 'text-green-700 dark:text-green-300', bgColor: 'bg-green-100 dark:bg-green-900/50' },
+  FORMER: { label: 'clients.status.former', color: 'text-orange-700 dark:text-orange-300', bgColor: 'bg-orange-100 dark:bg-orange-900/50' },
   ARCHIVED: { label: 'clients.status.archived', color: 'text-red-700 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-900/50' },
 }
 
@@ -79,7 +80,7 @@ export function ClientCard({
   const menuRef = useRef<HTMLDivElement>(null)
 
   const typeInfo = typeConfig[client.type] || typeConfig.COMPANY
-  const statusInfo = statusConfig[client.status] || statusConfig.ACTIVE
+  const statusInfo = statusConfig[client.status] || statusConfig.PROSPECT
   const TypeIcon = typeInfo.icon
 
   // Determine permissions based on current user
