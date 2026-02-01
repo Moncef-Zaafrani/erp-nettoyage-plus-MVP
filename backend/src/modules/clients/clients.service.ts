@@ -458,4 +458,84 @@ export class ClientsService {
     );
     return { restored, errors };
   }
+
+  // ==================== PASSWORD & VERIFICATION ====================
+
+  /**
+   * Reset password for a client's linked user account
+   */
+  async resetClientPassword(
+    clientId: string,
+    adminUserId: string,
+    ip: string,
+  ): Promise<{ message: string; tempPassword?: string }> {
+    const client = await this.findById(clientId);
+
+    if (!client.userId) {
+      throw new NotFoundException(
+        'This client does not have a linked user account',
+      );
+    }
+
+    // Use the users service to reset the password
+    return this.usersService.adminResetPassword(
+      client.userId,
+      'link', // Send reset link by default
+      adminUserId,
+      ip,
+    );
+  }
+
+  /**
+   * Send verification email for a client's linked user account
+   */
+  async sendClientVerification(
+    clientId: string,
+    adminUserId: string,
+    ip: string,
+  ): Promise<{ message: string }> {
+    const client = await this.findById(clientId);
+
+    if (!client.userId) {
+      throw new NotFoundException(
+        'This client does not have a linked user account',
+      );
+    }
+
+    // Use the users service to send verification email
+    return this.usersService.sendVerificationEmail(
+      client.userId,
+      adminUserId,
+      ip,
+    );
+  }
+
+  /**
+   * Batch send verification emails for clients with linked user accounts
+   */
+  async batchSendVerification(
+    batchDto: BatchIdsDto,
+    adminUserId: string,
+    ip: string,
+  ): Promise<{ sent: string[]; errors: Array<{ id: string; error: string }> }> {
+    const sent: string[] = [];
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of batchDto.ids) {
+      try {
+        await this.sendClientVerification(id, adminUserId, ip);
+        sent.push(id);
+      } catch (error) {
+        errors.push({
+          id,
+          error: error.message,
+        });
+      }
+    }
+
+    this.logger.log(
+      `Batch send verification: ${sent.length} succeeded, ${errors.length} failed`,
+    );
+    return { sent, errors };
+  }
 }

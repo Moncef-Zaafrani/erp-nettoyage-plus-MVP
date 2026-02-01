@@ -1243,6 +1243,25 @@ export const usersApi = {
   },
 
   /**
+   * Send verification email (admin action)
+   */
+  sendVerification: async (id: string): Promise<{ message: string }> => {
+    return request<{ message: string }>(`/users/${id}/send-verification`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Batch send verification emails
+   */
+  batchSendVerification: async (ids: string[]): Promise<{ sent: string[]; errors: any[] }> => {
+    return request<{ sent: string[]; errors: any[] }>('/users/batch/send-verification', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  },
+
+  /**
    * Get supervisors (for dropdown)
    */
   getSupervisors: async (): Promise<User[]> => {
@@ -1276,6 +1295,8 @@ export interface Client {
   status: ClientStatus
   sitesCount?: number
   activeContractsCount?: number
+  /** Linked user account for client portal login (if any) */
+  userId?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -1413,6 +1434,34 @@ export const clientsApi = {
       method: 'POST',
       body: JSON.stringify({ ids }),
     }).then(res => ({ success: true, count: res.deleted?.length || ids.length }))
+  },
+
+  /**
+   * Reset password for a client with a linked user account
+   */
+  resetPassword: async (id: string): Promise<{ message: string }> => {
+    return request<{ message: string }>(`/clients/${id}/reset-password`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Send verification email for a client with a linked user account
+   */
+  sendVerification: async (id: string): Promise<{ message: string }> => {
+    return request<{ message: string }>(`/clients/${id}/send-verification`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Batch send verification emails for clients
+   */
+  batchSendVerification: async (ids: string[]): Promise<{ sent: string[]; errors: any[] }> => {
+    return request<{ sent: string[]; errors: any[] }>('/clients/batch/send-verification', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
   },
 }
 

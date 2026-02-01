@@ -387,4 +387,34 @@ export class UsersController {
 
     return this.usersService.adminResetPassword(id, resetDto.mode, user.id, ip);
   }
+
+  // ==================== VERIFICATION MANAGEMENT ====================
+
+  /**
+   * POST /api/users/:id/send-verification
+   * Admin-initiated verification email
+   */
+  @Post(':id/send-verification')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async sendVerification(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.sendVerificationEmail(id, user.id, ip);
+  }
+
+  /**
+   * POST /api/users/batch/send-verification
+   * Batch send verification emails
+   */
+  @Post('batch/send-verification')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchSendVerification(
+    @Body() batchDto: { ids: string[] },
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.batchSendVerification(batchDto.ids, user.id, ip);
+  }
 }

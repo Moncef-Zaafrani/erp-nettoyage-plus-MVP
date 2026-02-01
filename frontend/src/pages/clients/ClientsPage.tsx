@@ -15,6 +15,7 @@ import {
   Users,
   ArrowUpDown,
   Briefcase,
+  Send,
 } from 'lucide-react'
 import { clientsApi, Client } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -207,6 +208,23 @@ export function ClientsPage() {
       console.error('Failed to activate clients:', err)
     }
   }
+
+  // Handle batch send verification emails (only for clients with userId)
+  const handleBatchSendVerification = async () => {
+    const clientsWithAccounts = selectedClients.filter(c => c.userId)
+    if (clientsWithAccounts.length === 0) return
+    try {
+      await clientsApi.batchSendVerification(clientsWithAccounts.map(c => c.id))
+      setSelectedClients([])
+      setSelectionMode(false)
+      fetchClients()
+    } catch (err) {
+      console.error('Failed to send verification emails:', err)
+    }
+  }
+
+  // Count of selected clients that have a linked user account
+  const selectedClientsWithAccounts = selectedClients.filter(c => c.userId).length
 
   // Count active filters
   const activeFilterCount = Object.values(activeFilters).flat().length
@@ -404,6 +422,17 @@ export function ClientsPage() {
             >
               {t('clients.batchArchive', 'Archive')}
             </button>
+            {/* Send Verification Email - only if at least one selected client has a user account */}
+            {selectedClientsWithAccounts > 0 && (
+              <button
+                onClick={handleBatchSendVerification}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                title={t('clients.batch.sendVerificationTooltip', 'Send verification email to {{count}} client(s) with accounts').replace('{{count}}', String(selectedClientsWithAccounts))}
+              >
+                <Send className="h-4 w-4" />
+                {t('clients.batch.sendVerification', 'Send Verification')} ({selectedClientsWithAccounts})
+              </button>
+            )}
           </div>
         )}
       </div>

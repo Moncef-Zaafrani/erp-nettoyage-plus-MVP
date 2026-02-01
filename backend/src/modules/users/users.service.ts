@@ -826,6 +826,92 @@ export class UsersService {
     }
   }
 
+  /**
+   * Admin-initiated email verification
+   * Generates a verification token and sends it to the user
+   * @param id - User ID to send verification to
+   * @param actorId - ID of admin performing the action
+   * @param ipAddress - IP address of the request
+   */
+  async sendVerificationEmail(
+    id: string,
+    actorId: string,
+    ipAddress?: string,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    if (user.emailVerified) {
+      return {
+        message: `User ${user.email} is already verified.`,
+      };
+    }
+
+    // Generate a verification token using JWT
+    const jwtService = new (require('@nestjs/jwt').JwtService)({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+    });
+
+    const verificationToken = jwtService.sign(
+      { sub: user.id, email: user.email, type: 'email_verification' },
+      { expiresIn: '7d' }, // 7 days to verify
+    );
+
+    // Construct verification URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const baseUrl = frontendUrl.startsWith('http') ? frontendUrl : `https://${frontendUrl}`;
+    const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}`;
+
+    this.logger.log(`Verification email generated for user: ${user.email}`);
+    this.logger.log(`[DEV] Verification URL for ${user.email}: ${verificationUrl}`);
+
+    // Audit log
+    await this.auditService.log({
+      actorId: actorId || 'system',
+      action: 'VERIFICATION_EMAIL_SENT',
+      entityType: 'user',
+      entityId: id,
+      changes: { email: user.email },
+      ipAddress,
+    });
+
+    return {
+      message: `Verification email has been sent to ${user.email}. Check logs for the URL (dev mode).`,
+    };
+  }
+
+  /**
+   * Batch send verification emails
+   */
+  async batchSendVerification(
+    ids: string[],
+    actorId: string,
+    ipAddress?: string,
+  ): Promise<{ sent: string[]; errors: Array<{ id: string; error: string }> }> {
+    const sent: string[] = [];
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of ids) {
+      try {
+        await this.sendVerificationEmail(id, actorId, ipAddress);
+        sent.push(id);
+      } catch (error) {
+        errors.push({
+          id,
+          error: error.message,
+        });
+      }
+    }
+
+    this.logger.log(
+      `Batch send verification: ${sent.length} succeeded, ${errors.length} failed`,
+    );
+    return { sent, errors };
+  }
+
   // ==================== HELPER METHODS ====================
 
   /**

@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  Ip,
 } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import {
@@ -20,6 +21,10 @@ import {
   BatchUpdateClientsDto,
   BatchIdsDto,
 } from './dto';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UserRole } from '../../shared/types/user.types';
+import { User } from '../users/entities/user.entity';
 
 @Controller('clients')
 export class ClientsController {
@@ -144,5 +149,49 @@ export class ClientsController {
   @Post('batch/restore')
   async restoreBatch(@Body() batchDto: BatchIdsDto) {
     return this.clientsService.restoreBatch(batchDto);
+  }
+
+  // ==================== PASSWORD MANAGEMENT ====================
+
+  /**
+   * POST /api/clients/:id/reset-password
+   * Admin-initiated password reset for client's linked user account
+   */
+  @Post(':id/reset-password')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async resetPassword(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.clientsService.resetClientPassword(id, user.id, ip);
+  }
+
+  /**
+   * POST /api/clients/:id/send-verification
+   * Admin-initiated verification email for client's linked user account
+   */
+  @Post(':id/send-verification')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async sendVerification(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.clientsService.sendClientVerification(id, user.id, ip);
+  }
+
+  /**
+   * POST /api/clients/batch/send-verification
+   * Batch send verification emails for clients with linked user accounts
+   */
+  @Post('batch/send-verification')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchSendVerification(
+    @Body() batchDto: BatchIdsDto,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.clientsService.batchSendVerification(batchDto, user.id, ip);
   }
 }

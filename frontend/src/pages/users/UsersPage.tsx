@@ -15,6 +15,7 @@ import {
   Users,
   UserPlus,
   ArrowUpDown,
+  Send,
 } from 'lucide-react'
 import { usersApi, User, zonesApi, Zone } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -250,6 +251,19 @@ export function UsersPage() {
     }
   }
 
+  // Handle batch send verification emails
+  const handleBatchSendVerification = async () => {
+    if (selectedUsers.length === 0) return
+    try {
+      await usersApi.batchSendVerification(selectedUsers.map(u => u.id))
+      setSelectedUsers([])
+      setSelectionMode(false)
+      fetchUsers()
+    } catch (err) {
+      console.error('Failed to send verification emails:', err)
+    }
+  }
+
   // Count active filters
   const activeFilterCount = Object.values(activeFilters).flat().length
 
@@ -445,6 +459,13 @@ export function UsersPage() {
               className="px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50"
             >
               {t('users.batchDeactivate', 'Deactivate')}
+            </button>
+            <button
+              onClick={handleBatchSendVerification}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50"
+            >
+              <Send className="h-4 w-4" />
+              {t('users.batch.sendVerification', 'Send Verification')}
             </button>
           </div>
         )}

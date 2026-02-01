@@ -22,6 +22,8 @@ import {
   Globe,
   Activity,
   Construction,
+  Key,
+  Send,
 } from 'lucide-react'
 import { clientsApi, Client } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -255,6 +257,50 @@ export function ClientDetailsPage() {
                             {t('clients.actions.archive', 'Archive')}
                           </>
                         )}
+                      </button>
+                    )}
+                    {/* Password Reset - Only for clients with linked user account */}
+                    {client.userId && canEdit && (
+                      <button
+                        onClick={async () => {
+                          setShowActionsMenu(false)
+                          setActionLoading(true)
+                          try {
+                            const result = await clientsApi.resetPassword(client.id)
+                            setActionMessage({ type: 'success', text: result.message })
+                          } catch (err: any) {
+                            setActionMessage({ type: 'error', text: err.message || t('clients.actions.resetPasswordError', 'Failed to reset password') })
+                          } finally {
+                            setActionLoading(false)
+                          }
+                        }}
+                        disabled={actionLoading}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <Key className="h-4 w-4" />
+                        {t('clients.actions.resetPassword', 'Reset Password')}
+                      </button>
+                    )}
+                    {/* Send Verification - Only for clients with linked user account */}
+                    {client.userId && canEdit && (
+                      <button
+                        onClick={async () => {
+                          setShowActionsMenu(false)
+                          setActionLoading(true)
+                          try {
+                            const result = await clientsApi.sendVerification(client.id)
+                            setActionMessage({ type: 'success', text: result.message })
+                          } catch (err: any) {
+                            setActionMessage({ type: 'error', text: err.message || t('clients.actions.sendVerificationError', 'Failed to send verification') })
+                          } finally {
+                            setActionLoading(false)
+                          }
+                        }}
+                        disabled={actionLoading}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        <Send className="h-4 w-4" />
+                        {t('clients.actions.sendVerification', 'Send Verification Email')}
                       </button>
                     )}
                   </div>
