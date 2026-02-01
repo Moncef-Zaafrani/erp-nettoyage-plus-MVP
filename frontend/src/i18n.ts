@@ -171,6 +171,9 @@ const resources = {
       'wip.description': "We're working hard to bring you this feature. It will be available in a future update.",
       'wip.phase': 'Planned for Phase {{phase}}',
       'wip.gotIt': 'Got it!',
+      // Language
+      'language.multiLanguage': 'Multi-language Support',
+      'language.phase2Message': 'English and Arabic translations are coming in Phase 2. The application is currently available in French only.',
       // App prompt
       'appPrompt.title': 'Get the mobile app',
       'appPrompt.description': 'Download our mobile app for a better experience on the go.',
@@ -1619,6 +1622,9 @@ const resources = {
       'wip.description': 'Nous travaillons dur pour vous apporter cette fonctionnalité. Elle sera disponible dans une prochaine mise à jour.',
       'wip.phase': 'Prévu pour la Phase {{phase}}',
       'wip.gotIt': 'Compris !',
+      // Language
+      'language.multiLanguage': 'Support multilingue',
+      'language.phase2Message': 'Les traductions en anglais et en arabe arrivent dans la Phase 2. L\'application est actuellement disponible uniquement en français.',
       // App prompt
       'appPrompt.title': 'Téléchargez l\'appli',
       'appPrompt.description': 'Téléchargez notre application mobile pour une meilleure expérience.',
@@ -3561,14 +3567,16 @@ const resources = {
   },
 }
 
-const savedLang = localStorage.getItem('language') || 'en'
+// Force French - other languages locked behind Phase 2
+const savedLang = 'fr'
+localStorage.setItem('language', 'fr')
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
     lng: savedLang,
-    fallbackLng: 'en',
+    fallbackLng: 'fr',
     interpolation: {
       escapeValue: false,
     },

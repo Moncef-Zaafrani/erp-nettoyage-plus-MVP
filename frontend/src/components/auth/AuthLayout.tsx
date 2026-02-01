@@ -1,6 +1,6 @@
 import { ReactNode, useState, useRef, useEffect } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
-import { Moon, Sun, Globe, ChevronDown, Check } from 'lucide-react'
+import { Moon, Sun, Globe, ChevronDown, Check, X, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import CleaningAnimation from './CleaningAnimation'
 
@@ -9,15 +9,16 @@ interface AuthLayoutProps {
 }
 
 const LANGUAGES = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷', available: true },
+  { code: 'en', name: 'English', flag: '🇺🇸', available: false },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦', available: false },
 ]
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   const { resolvedTheme, setTheme } = useTheme()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [langDropdownOpen, setLangDropdownOpen] = useState(false)
+  const [showLangPhase2Modal, setShowLangPhase2Modal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   
   const toggleTheme = () => {
@@ -70,14 +71,28 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                 {LANGUAGES.map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                    onClick={() => {
+                      if (lang.available) {
+                        changeLanguage(lang.code)
+                      } else {
+                        setLangDropdownOpen(false)
+                        setShowLangPhase2Modal(true)
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                      lang.available ? 'hover:bg-[var(--color-bg-tertiary)]' : 'opacity-50 cursor-not-allowed'
+                    }`}
                   >
                     <span className="flex items-center gap-3">
                       <span className="text-base">{lang.flag}</span>
-                      <span className="text-[var(--color-text)]">{lang.name}</span>
+                      <span className={lang.available ? 'text-[var(--color-text)]' : 'text-gray-400'}>{lang.name}</span>
                     </span>
-                    {i18n.language === lang.code && (
+                    {!lang.available && (
+                      <span className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded">
+                        Phase 2
+                      </span>
+                    )}
+                    {lang.available && i18n.language === lang.code && (
                       <Check size={16} className="text-primary-500" />
                     )}
                   </button>
@@ -94,6 +109,46 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
         </div>
+
+        {/* Phase 2 Language Modal */}
+        {showLangPhase2Modal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowLangPhase2Modal(false)}>
+            <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowLangPhase2Modal(false)}
+                className="absolute right-4 top-4 rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              >
+                <X size={20} />
+              </button>
+              <div className="mb-4 flex justify-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600">
+                  <Globe size={32} className="text-white" />
+                </div>
+              </div>
+              <h2 className="mb-2 text-center text-xl font-semibold text-gray-900 dark:text-white">
+                {t('wip.title', 'Coming Soon!')}
+              </h2>
+              <p className="mb-4 text-center text-lg font-medium text-blue-600 dark:text-blue-400">
+                {t('language.multiLanguage', 'Multi-language Support')}
+              </p>
+              <p className="mb-6 text-center text-sm text-gray-600 dark:text-gray-400">
+                {t('language.phase2Message', 'English and Arabic translations are coming in Phase 2. The application is currently available in French only.')}
+              </p>
+              <div className="mb-6 flex items-center justify-center gap-2">
+                <Clock size={16} className="text-gray-400" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {t('wip.phase', 'Planned for Phase {{phase}}', { phase: 2 })}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowLangPhase2Modal(false)}
+                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              >
+                {t('wip.gotIt', 'Got it!')}
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Form content */}
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
