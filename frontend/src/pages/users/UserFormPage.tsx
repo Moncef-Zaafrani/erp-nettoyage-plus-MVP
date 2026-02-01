@@ -146,6 +146,7 @@ export function UserFormPage() {
           contractType: user.contractType || '',
           supervisorId: user.supervisorId || '',
           sendWelcomeEmail: false, // No email on edit
+          emailVerified: user.emailVerified || false,
         })
       } catch (err: any) {
         setError(err.message || t('users.form.errors.loadFailed', 'Failed to load user'))
