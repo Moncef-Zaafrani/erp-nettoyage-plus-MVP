@@ -417,4 +417,32 @@ export class UsersController {
   ) {
     return this.usersService.batchSendVerification(batchDto.ids, user.id, ip);
   }
+
+  /**
+   * POST /api/users/:id/verify-email
+   * Admin-initiated direct email verification (mark as verified without sending email)
+   */
+  @Post(':id/verify-email')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async verifyEmail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.verifyEmailDirectly(id, user.id, ip);
+  }
+
+  /**
+   * POST /api/users/batch/verify-email
+   * Batch verify emails directly
+   */
+  @Post('batch/verify-email')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchVerifyEmail(
+    @Body() batchDto: { ids: string[] },
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.usersService.batchVerifyEmail(batchDto.ids, user.id, ip);
+  }
 }

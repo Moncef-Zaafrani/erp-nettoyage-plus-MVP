@@ -1102,6 +1102,7 @@ export interface CreateUserRequest {
   hireDate?: string
   contractType?: ContractType
   supervisorId?: string
+  emailVerified?: boolean
 }
 
 export interface UpdateUserRequest {
@@ -1262,6 +1263,25 @@ export const usersApi = {
    */
   batchSendVerification: async (ids: string[]): Promise<{ sent: string[]; errors: any[] }> => {
     return request<{ sent: string[]; errors: any[] }>('/users/batch/send-verification', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  },
+
+  /**
+   * Verify email directly (admin action - no email sent)
+   */
+  verifyEmail: async (id: string): Promise<{ message: string }> => {
+    return request<{ message: string }>(`/users/${id}/verify-email`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Batch verify emails directly
+   */
+  batchVerifyEmail: async (ids: string[]): Promise<{ verified: string[]; errors: any[] }> => {
+    return request<{ verified: string[]; errors: any[] }>('/users/batch/verify-email', {
       method: 'POST',
       body: JSON.stringify({ ids }),
     })

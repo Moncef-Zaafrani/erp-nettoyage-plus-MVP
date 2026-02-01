@@ -649,6 +649,7 @@ const resources = {
       // Users - Actions
       'users.actions.viewProfile': 'View Profile',
       'users.actions.resetPassword': 'Reset Password',
+      'users.actions.verifyEmail': 'Verify Email',
       'users.actions.select': 'Select',
       'users.actions.activate': 'Activate',
       'users.actions.deactivate': 'Deactivate',
@@ -757,6 +758,8 @@ const resources = {
       'users.form.password': 'Password',
       'users.form.passwordGenerated': 'Auto-generated password',
       'users.form.passwordHint': 'Password will be sent to user via email',
+      'users.form.emailVerified': 'Mark email as verified',
+      'users.form.emailVerifiedHint': 'Skip email verification step. User can login immediately.',
       'users.form.copyPassword': 'Copy',
       'users.form.regenerate': 'Regenerate',
       'users.form.errors.emailRequired': 'Email is required',
@@ -2179,6 +2182,7 @@ const resources = {
       // Users - Actions
       'users.actions.viewProfile': 'Voir le profil',
       'users.actions.resetPassword': 'Réinitialiser le mot de passe',
+      'users.actions.verifyEmail': 'Vérifier l\'email',
       'users.actions.select': 'Sélectionner',
       'users.actions.activate': 'Activer',
       'users.actions.deactivate': 'Désactiver',
@@ -2287,6 +2291,8 @@ const resources = {
       'users.form.password': 'Mot de passe',
       'users.form.passwordGenerated': 'Mot de passe auto-généré',
       'users.form.passwordHint': 'Le mot de passe sera envoyé à l\'utilisateur par email',
+      'users.form.emailVerified': 'Marquer l\'email comme vérifié',
+      'users.form.emailVerifiedHint': 'Ignorer l\'étape de vérification. L\'utilisateur peut se connecter immédiatement.',
       'users.form.copyPassword': 'Copier',
       'users.form.regenerate': 'Régénérer',
       'users.form.errors.emailRequired': 'L\'email est requis',
@@ -3651,6 +3657,7 @@ const resources = {
       // Users - Actions
       'users.actions.viewProfile': 'عرض الملف الشخصي',
       'users.actions.resetPassword': 'إعادة تعيين كلمة المرور',
+      'users.actions.verifyEmail': 'تأكيد البريد الإلكتروني',
       'users.actions.select': 'تحديد',
       'users.actions.activate': 'تفعيل',
       'users.actions.deactivate': 'إلغاء التفعيل',

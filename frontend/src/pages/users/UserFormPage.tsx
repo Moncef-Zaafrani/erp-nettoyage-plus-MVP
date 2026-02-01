@@ -83,6 +83,7 @@ export function UserFormPage() {
     contractType: '' as string,
     supervisorId: '' as string,
     sendWelcomeEmail: true,
+    emailVerified: false,
   })
   
   const [showPassword, setShowPassword] = useState(false)
@@ -272,6 +273,7 @@ export function UserFormPage() {
           hireDate: formData.hireDate || undefined,
           contractType: formData.contractType as any || undefined,
           supervisorId: formData.supervisorId || undefined,
+          emailVerified: formData.emailVerified || undefined,
         }
         
         const newUser = await usersApi.create(createData)
@@ -417,6 +419,29 @@ export function UserFormPage() {
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     {t('users.form.passwordHint', 'Auto-generated password. Share it securely with the user.')}
                   </p>
+                </div>
+              )}
+              
+              {/* Email Verified Checkbox (only for new users) */}
+              {!isEditMode && (
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="emailVerified"
+                      checked={formData.emailVerified}
+                      onChange={handleChange}
+                      className="w-5 h-5 text-emerald-600 border-gray-300 dark:border-gray-600 rounded focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('users.form.emailVerified', 'Mark email as verified')}
+                      </span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t('users.form.emailVerifiedHint', 'Skip email verification step. User can login immediately.')}
+                      </p>
+                    </div>
+                  </label>
                 </div>
               )}
               

@@ -42,7 +42,7 @@ export class UsersService {
     actorId?: string,
     ipAddress?: string,
   ): Promise<User> {
-    const { email } = createUserDto;
+    const { email, emailVerified, ...restDto } = createUserDto;
 
     // Check for duplicate email
     const existingUser = await this.userRepository.findOne({
@@ -55,12 +55,15 @@ export class UsersService {
     }
 
     const user = this.userRepository.create({
-      ...createUserDto,
+      ...restDto,
       email: email.toLowerCase(),
+      emailVerified: emailVerified || false,
+      // Set emailVerifiedAt if emailVerified is true
+      ...(emailVerified ? { emailVerifiedAt: new Date() } : {}),
     });
 
     await this.userRepository.save(user);
-    this.logger.log(`User created: ${user.email} (ID: ${user.id})`);
+    this.logger.log(`User created: ${user.email} (ID: ${user.id})${emailVerified ? ' [pre-verified]' : ''}`);
 
     // Audit Log
     if (actorId) {
@@ -323,6 +326,7 @@ export class UsersService {
 
   /**
    * Update single user by ID
+   * Uses withDeleted to also find archived/deactivated users
    */
   async update(
     id: string,
@@ -330,7 +334,10 @@ export class UsersService {
     actorId?: string,
     ipAddress?: string,
   ): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ 
+      where: { id },
+      withDeleted: true, // Include soft-deleted users so we can reactivate them
+    });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -339,6 +346,12 @@ export class UsersService {
     // Capture old state for audit
     const oldStatus = user.status;
     const oldRole = user.role;
+
+    // If reactivating (changing status from ARCHIVED to ACTIVE), clear deletedAt
+    if (updateUserDto.status === UserStatus.ACTIVE && user.deletedAt) {
+      user.deletedAt = null;
+      this.logger.log(`Restoring soft-deleted user: ${user.email} (ID: ${id})`);
+    }
 
     // Check for email conflict if updating email
     if (updateUserDto.email && updateUserDto.email !== user.email) {
@@ -910,6 +923,84 @@ export class UsersService {
       `Batch send verification: ${sent.length} succeeded, ${errors.length} failed`,
     );
     return { sent, errors };
+  }
+
+  /**
+   * Verify email directly (admin action)
+   * Marks the user's email as verified without sending a verification email
+   * @param id - User ID to verify
+   * @param actorId - ID of admin performing the action
+   * @param ipAddress - IP address of the request
+   */
+  async verifyEmailDirectly(
+    id: string,
+    actorId: string,
+    ipAddress?: string,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ 
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    if (user.emailVerified) {
+      return {
+        message: `User ${user.email} is already verified.`,
+      };
+    }
+
+    // Mark email as verified
+    user.emailVerified = true;
+    user.emailVerifiedAt = new Date();
+    await this.userRepository.save(user);
+
+    this.logger.log(`Email verified directly for user: ${user.email}`);
+
+    // Audit log
+    await this.auditService.log({
+      actorId: actorId || 'system',
+      action: 'EMAIL_VERIFIED_DIRECTLY',
+      entityType: 'user',
+      entityId: id,
+      changes: { email: user.email, verifiedBy: 'admin' },
+      ipAddress,
+    });
+
+    return {
+      message: `Email ${user.email} has been verified successfully.`,
+    };
+  }
+
+  /**
+   * Batch verify emails directly
+   */
+  async batchVerifyEmail(
+    ids: string[],
+    actorId: string,
+    ipAddress?: string,
+  ): Promise<{ verified: string[]; errors: Array<{ id: string; error: string }> }> {
+    const verified: string[] = [];
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of ids) {
+      try {
+        await this.verifyEmailDirectly(id, actorId, ipAddress);
+        verified.push(id);
+      } catch (error) {
+        errors.push({
+          id,
+          error: error.message,
+        });
+      }
+    }
+
+    this.logger.log(
+      `Batch verify email: ${verified.length} succeeded, ${errors.length} failed`,
+    );
+    return { verified, errors };
   }
 
   // ==================== HELPER METHODS ====================

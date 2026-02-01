@@ -7,6 +7,7 @@ import {
   MaxLength,
   IsUUID,
   IsDateString,
+  IsBoolean,
 } from 'class-validator';
 import { UserRole, UserStatus } from '../../../shared/types/user.types';
 
@@ -87,4 +88,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsUUID('4', { message: 'Invalid supervisor ID' })
   supervisorId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  emailVerified?: boolean;
 }

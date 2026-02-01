@@ -12,6 +12,7 @@ import { Repository, FindOptionsWhere } from 'typeorm';
 import { Client } from './entities/client.entity';
 import { UsersService } from '../users/users.service';
 import { UserRole, UserStatus } from '../../shared/types/user.types';
+import { ClientStatus } from '../../shared/types/client.types';
 import {
   CreateClientDto,
   UpdateClientDto,
@@ -308,9 +309,17 @@ export class ClientsService {
 
   /**
    * Update a single client
+   * Uses includeDeleted to also find archived clients for reactivation
    */
   async update(id: string, updateClientDto: UpdateClientDto): Promise<Client> {
-    const client = await this.findById(id);
+    // Find with includeDeleted to allow reactivating archived clients
+    const client = await this.findById(id, true);
+
+    // If reactivating (changing status from ARCHIVED to CURRENT), clear deletedAt
+    if (updateClientDto.status === ClientStatus.CURRENT && client.deletedAt) {
+      client.deletedAt = null;
+      this.logger.log(`Restoring soft-deleted client: ${client.name} (ID: ${id})`);
+    }
 
     // Check for duplicate email if changing email
     if (

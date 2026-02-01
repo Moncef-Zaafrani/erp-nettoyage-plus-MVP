@@ -566,6 +566,14 @@ export function UsersPage() {
                     console.error('Failed to reset password:', err)
                   }
                 }}
+                onVerifyEmail={async (u) => {
+                  try {
+                    await usersApi.verifyEmail(u.id)
+                    fetchUsers()
+                  } catch (err) {
+                    console.error('Failed to verify email:', err)
+                  }
+                }}
                 onDeactivate={async (u) => {
                   try {
                     await usersApi.archive(u.id)

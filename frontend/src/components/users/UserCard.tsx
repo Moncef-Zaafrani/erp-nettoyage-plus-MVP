@@ -15,6 +15,7 @@ import {
   UserX,
   UserPlus,
   Check,
+  BadgeCheck,
 } from 'lucide-react'
 import { User, UserRole } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -29,6 +30,7 @@ interface UserCardProps {
   onResetPassword?: (user: User) => void
   onDeactivate?: (user: User) => void
   onActivate?: (user: User) => void
+  onVerifyEmail?: (user: User) => void
   selectionMode?: boolean
 }
 
@@ -95,6 +97,7 @@ export function UserCard({
   onResetPassword,
   onDeactivate,
   onActivate,
+  onVerifyEmail,
   selectionMode = false,
 }: UserCardProps) {
   const { t } = useTranslation()
@@ -275,6 +278,20 @@ export function UserCard({
                   >
                     <KeyRound className="h-4 w-4" />
                     {t('users.actions.resetPassword', 'Reset Password')}
+                  </button>
+                )}
+
+                {canResetPassword && !user.emailVerified && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowMenu(false)
+                      onVerifyEmail?.(user)
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                  >
+                    <BadgeCheck className="h-4 w-4" />
+                    {t('users.actions.verifyEmail', 'Verify Email')}
                   </button>
                 )}
 
