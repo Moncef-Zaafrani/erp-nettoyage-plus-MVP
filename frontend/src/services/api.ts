@@ -1312,6 +1312,10 @@ export interface CreateClientRequest {
   contactPerson?: string
   contactPhone?: string
   notes?: string
+  /** If true, creates a user account so the client can log in */
+  createUserAccount?: boolean
+  /** Password for the client's login account (required if createUserAccount is true) */
+  password?: string
 }
 
 export interface UpdateClientRequest {

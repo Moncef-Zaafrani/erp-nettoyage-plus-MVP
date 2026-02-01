@@ -13,6 +13,7 @@ import { UserSiteAssignment } from './entities/user-site-assignment.entity';
 import { UserSettings } from './entities/user-settings.entity';
 import { UserSession } from './entities/user-session.entity';
 import { AuditModule } from '../audit/audit.module';
+import { ClientsModule } from '../clients/clients.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuditModule } from '../audit/audit.module';
       UserSession,
     ]),
     forwardRef(() => AuditModule),
+    forwardRef(() => ClientsModule),
   ],
   controllers: [UsersController, ProfileController, SettingsController],
   providers: [UsersService, ProfileService, SettingsService],

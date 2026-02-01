@@ -48,6 +48,10 @@ export function ClientFormPage() {
     contactPerson: '',
     contactPhone: '',
     notes: '',
+    // New fields for user account creation
+    createUserAccount: false,
+    password: '',
+    confirmPassword: '',
   })
   
   const [loading, setLoading] = useState(false)
@@ -87,6 +91,10 @@ export function ClientFormPage() {
           contactPerson: client.contactPerson || '',
           contactPhone: client.contactPhone || '',
           notes: client.notes || '',
+          // Edit mode: don't allow creating user account
+          createUserAccount: false,
+          password: '',
+          confirmPassword: '',
         })
       } catch (err: any) {
         setError(err.message || t('clients.form.errors.loadFailed', 'Failed to load client'))
@@ -100,11 +108,11 @@ export function ClientFormPage() {
   
   // Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
+    const { name, value, type } = e.target
     
     setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }))
     
     // Clear validation error for this field
@@ -123,6 +131,21 @@ export function ClientFormPage() {
     
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = t('clients.form.errors.emailInvalid', 'Invalid email format')
+    }
+    
+    // Validate user account fields if createUserAccount is checked
+    if (formData.createUserAccount) {
+      if (!formData.email) {
+        errors.email = t('clients.form.errors.emailRequiredForAccount', 'Email is required for login account')
+      }
+      if (!formData.password) {
+        errors.password = t('clients.form.errors.passwordRequired', 'Password is required')
+      } else if (formData.password.length < 6) {
+        errors.password = t('clients.form.errors.passwordTooShort', 'Password must be at least 6 characters')
+      }
+      if (formData.password !== formData.confirmPassword) {
+        errors.confirmPassword = t('clients.form.errors.passwordMismatch', 'Passwords do not match')
+      }
     }
     
     setValidationErrors(errors)
@@ -176,10 +199,17 @@ export function ClientFormPage() {
           contactPerson: formData.contactPerson || undefined,
           contactPhone: formData.contactPhone || undefined,
           notes: formData.notes || undefined,
+          // Include user account creation fields
+          createUserAccount: formData.createUserAccount,
+          password: formData.createUserAccount ? formData.password : undefined,
         }
         
         const newClient = await clientsApi.create(createData)
-        setSuccess(t('clients.form.createSuccess', 'Client created successfully'))
+        setSuccess(
+          formData.createUserAccount
+            ? t('clients.form.createSuccessWithAccount', 'Client created successfully with login account')
+            : t('clients.form.createSuccess', 'Client created successfully')
+        )
         
         // Navigate to details page after short delay
         setTimeout(() => navigate(`/clients/view/${newClient.id}`), 1500)
@@ -469,6 +499,90 @@ export function ClientFormPage() {
               </div>
             </div>
           </div>
+          
+          {/* Login Account - Only show in create mode */}
+          {!isEditMode && (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {t('clients.form.sections.loginAccount', 'Login Account')}
+              </h2>
+              
+              {/* Create User Account Checkbox */}
+              <div className="mb-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="createUserAccount"
+                    checked={formData.createUserAccount}
+                    onChange={handleChange}
+                    className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('clients.form.createUserAccount', 'Create login account for this client')}
+                    </span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('clients.form.createUserAccountHint', 'Allow this client to log in to the portal and view their sites, contracts, and interventions')}
+                    </p>
+                  </div>
+                </label>
+              </div>
+              
+              {/* Password Fields - Only show when checkbox is checked */}
+              {formData.createUserAccount && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  {/* Password */}
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('clients.form.password', 'Password')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder={t('clients.form.passwordPlaceholder', 'Min. 6 characters')}
+                      className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                        validationErrors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                      } focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
+                    />
+                    {validationErrors.password && (
+                      <p className="mt-1 text-sm text-red-500">{validationErrors.password}</p>
+                    )}
+                  </div>
+                  
+                  {/* Confirm Password */}
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('clients.form.confirmPassword', 'Confirm Password')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder={t('clients.form.confirmPasswordPlaceholder', 'Re-enter password')}
+                      className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
+                        validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                      } focus:ring-2 focus:ring-emerald-500 focus:border-transparent`}
+                    />
+                    {validationErrors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-500">{validationErrors.confirmPassword}</p>
+                    )}
+                  </div>
+                  
+                  {/* Info about email */}
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('clients.form.loginEmailHint', 'The client will use their email address above to log in.')}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Notes */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">

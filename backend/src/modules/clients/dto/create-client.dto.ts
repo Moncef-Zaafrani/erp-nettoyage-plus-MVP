@@ -5,6 +5,8 @@ import {
   IsEmail,
   MaxLength,
   IsUUID,
+  IsBoolean,
+  MinLength,
 } from 'class-validator';
 import { ClientType, ClientStatus } from '../../../shared/types/client.types';
 
@@ -12,6 +14,23 @@ export class CreateClientDto {
   @IsString()
   @MaxLength(200)
   name: string;
+
+  /**
+   * If true, creates a user account for the client to log in
+   * Requires email and password to be provided
+   */
+  @IsOptional()
+  @IsBoolean()
+  createUserAccount?: boolean;
+
+  /**
+   * Password for the client's user account
+   * Required if createUserAccount is true
+   */
+  @IsOptional()
+  @IsString()
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  password?: string;
 
   @IsOptional()
   @IsEnum(ClientType, { message: 'Invalid client type' })

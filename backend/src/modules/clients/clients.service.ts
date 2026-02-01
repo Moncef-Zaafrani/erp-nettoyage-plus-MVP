@@ -2,11 +2,16 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { Client } from './entities/client.entity';
+import { UsersService } from '../users/users.service';
+import { UserRole, UserStatus } from '../../shared/types/user.types';
 import {
   CreateClientDto,
   UpdateClientDto,
@@ -23,6 +28,8 @@ export class ClientsService {
   constructor(
     @InjectRepository(Client)
     private readonly clientRepository: Repository<Client>,
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
   ) {}
 
   // ==================== CREATE OPERATIONS ====================
@@ -54,9 +61,24 @@ export class ClientsService {
 
   /**
    * Create a single client
+   * If createUserAccount is true, also creates a user account for login
    */
   async create(createClientDto: CreateClientDto): Promise<Client> {
-    const { email } = createClientDto;
+    const { email, createUserAccount, password, name } = createClientDto;
+
+    // Validate: if createUserAccount is true, email and password are required
+    if (createUserAccount) {
+      if (!email) {
+        throw new BadRequestException(
+          'Email is required when creating a user account',
+        );
+      }
+      if (!password) {
+        throw new BadRequestException(
+          'Password is required when creating a user account',
+        );
+      }
+    }
 
     // Check for duplicate email if provided
     if (email) {
@@ -75,15 +97,49 @@ export class ClientsService {
     // Generate unique client code
     const clientCode = await this.generateClientCode();
 
+    let userId: string | null = null;
+
+    // Create user account if requested
+    if (createUserAccount && email && password) {
+      try {
+        // Parse name into firstName and lastName
+        const nameParts = name.trim().split(' ');
+        const firstName = nameParts[0] || 'Client';
+        const lastName = nameParts.slice(1).join(' ') || clientCode;
+
+        const user = await this.usersService.create({
+          email: email.toLowerCase(),
+          password,
+          firstName,
+          lastName,
+          role: UserRole.CLIENT,
+          status: UserStatus.CURRENT,
+        });
+
+        userId = user.id;
+        this.logger.log(`Created user account for client: ${email}`);
+      } catch (error) {
+        this.logger.error(`Failed to create user account: ${error.message}`);
+        throw new ConflictException(
+          `Failed to create user account: ${error.message}`,
+        );
+      }
+    }
+
     const client = this.clientRepository.create({
       ...createClientDto,
       email: email?.toLowerCase() || null,
       clientCode,
+      userId,
     });
+
+    // Remove non-entity fields before saving
+    delete (client as any).createUserAccount;
+    delete (client as any).password;
 
     const savedClient = await this.clientRepository.save(client);
     this.logger.log(
-      `Created client: ${savedClient.clientCode} - ${savedClient.name}`,
+      `Created client: ${savedClient.clientCode} - ${savedClient.name}${userId ? ' (with user account)' : ''}`,
     );
     return savedClient;
   }
