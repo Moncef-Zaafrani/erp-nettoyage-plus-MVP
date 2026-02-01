@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import LoginPage from './pages/auth/LoginPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
@@ -174,10 +175,11 @@ export default function App() {
 
 // Simple placeholder for routes that aren't implemented yet
 function ComingSoonPage({ title }: { title: string }) {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-8">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
-      <p className="mt-2 text-gray-600 dark:text-gray-400">This page is coming soon.</p>
+      <p className="mt-2 text-gray-600 dark:text-gray-400">{t('common.wipMessage', 'This page is coming soon.')}</p>
     </div>
   )
 }

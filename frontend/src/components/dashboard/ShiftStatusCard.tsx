@@ -133,12 +133,13 @@ export function ShiftStatusCard() {
     setActionLoading(true)
     try {
       await attendanceApi.clockIn({})
-      toast.success('Shift Started', `Your shift started at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      toast.success(t('shift.shiftStarted', 'Shift Started'), t('shift.startedAt', 'Your shift started at {{time}}', { time }))
       window.dispatchEvent(new CustomEvent('shiftStatusChanged'))
       await fetchData()
     } catch (err) {
       console.error('Failed to clock in:', err)
-      toast.error('Failed to Start Shift', 'Please try again')
+      toast.error(t('shift.startError', 'Failed to Start Shift'), t('shift.errorRetry', 'Please try again'))
     } finally {
       setActionLoading(false)
     }
@@ -150,12 +151,13 @@ export function ShiftStatusCard() {
     setActionLoading(true)
     try {
       await attendanceApi.clockOut({})
-      toast.success('Shift Ended', `You worked ${formatDuration(elapsed)} this session`)
+      const duration = formatDuration(elapsed)
+      toast.success(t('shift.shiftEnded', 'Shift Ended'), t('shift.workedDuration', 'You worked {{duration}} this session', { duration }))
       window.dispatchEvent(new CustomEvent('shiftStatusChanged'))
       await fetchData()
     } catch (err) {
       console.error('Failed to clock out:', err)
-      toast.error('Failed to End Shift', 'Please try again')
+      toast.error(t('shift.endError', 'Failed to End Shift'), t('shift.errorRetry', 'Please try again'))
     } finally {
       setActionLoading(false)
     }

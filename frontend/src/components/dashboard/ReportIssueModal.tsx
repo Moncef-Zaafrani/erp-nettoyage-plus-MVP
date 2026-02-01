@@ -23,22 +23,22 @@ interface ReportIssueModalProps {
   onClose: () => void
 }
 
-// Category options with icons
-const categories: { value: ReportCategory; label: string; icon: typeof Wrench }[] = [
-  { value: 'equipment_issue', label: 'Equipment Issue', icon: Wrench },
-  { value: 'safety_concern', label: 'Safety Concern', icon: Shield },
-  { value: 'schedule_problem', label: 'Schedule Problem', icon: Calendar },
-  { value: 'site_access', label: 'Site Access Issue', icon: Key },
-  { value: 'client_complaint', label: 'Client Complaint', icon: MessageSquare },
-  { value: 'other', label: 'Other', icon: MoreHorizontal },
+// Category options with icons - translations applied in render
+const categoryConfig: { value: ReportCategory; labelKey: string; icon: typeof Wrench }[] = [
+  { value: 'equipment_issue', labelKey: 'report.category.equipment', icon: Wrench },
+  { value: 'safety_concern', labelKey: 'report.category.safety', icon: Shield },
+  { value: 'schedule_problem', labelKey: 'report.category.schedule', icon: Calendar },
+  { value: 'site_access', labelKey: 'report.category.siteAccess', icon: Key },
+  { value: 'client_complaint', labelKey: 'report.category.clientComplaint', icon: MessageSquare },
+  { value: 'other', labelKey: 'report.category.other', icon: MoreHorizontal },
 ]
 
-// Priority options
-const priorities: { value: ReportPriority; label: string; color: string }[] = [
-  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' },
-  { value: 'medium', label: 'Medium', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' },
-  { value: 'high', label: 'High', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400' },
-  { value: 'urgent', label: 'Urgent', color: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400' },
+// Priority options - translations applied in render
+const priorityConfig: { value: ReportPriority; labelKey: string; color: string }[] = [
+  { value: 'low', labelKey: 'report.priority.low', color: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' },
+  { value: 'medium', labelKey: 'report.priority.medium', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' },
+  { value: 'high', labelKey: 'report.priority.high', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-400' },
+  { value: 'urgent', labelKey: 'report.priority.urgent', color: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400' },
 ]
 
 export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
@@ -68,13 +68,19 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Invalid file type', 'Please select an image file')
+      toast.error(
+        t('report.error.invalidFileType', 'Invalid file type'),
+        t('report.error.selectImage', 'Please select an image file')
+      )
       return
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('File too large', 'Maximum file size is 5MB')
+      toast.error(
+        t('report.error.fileTooLarge', 'File too large'),
+        t('report.error.maxFileSize', 'Maximum file size is 5MB')
+      )
       return
     }
 
@@ -98,19 +104,19 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
   const handleSubmit = async () => {
     // Validation
     if (!title.trim()) {
-      setError('Please enter a title')
+      setError(t('report.error.titleRequired', 'Please enter a title'))
       return
     }
     if (title.trim().length < 5) {
-      setError('Title must be at least 5 characters')
+      setError(t('report.error.titleTooShort', 'Title must be at least 5 characters'))
       return
     }
     if (!description.trim()) {
-      setError('Please enter a description')
+      setError(t('report.error.descriptionRequired', 'Please enter a description'))
       return
     }
     if (description.trim().length < 10) {
-      setError('Description must be at least 10 characters')
+      setError(t('report.error.descriptionTooShort', 'Description must be at least 10 characters'))
       return
     }
 
@@ -130,8 +136,10 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
       setSubmitted(true)
 
       toast.success(
-        'Report Submitted',
-        `Your report #${report.id.slice(0, 8).toUpperCase()} has been sent to your supervisor`
+        t('report.submitSuccess', 'Report Submitted'),
+        t('report.submitSuccessMessage', 'Your report #{{ticketId}} has been sent to your supervisor', {
+          ticketId: report.id.slice(0, 8).toUpperCase()
+        })
       )
 
       // Auto-close after showing success
@@ -140,8 +148,11 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
       }, 3000)
     } catch (err) {
       console.error('Failed to submit report:', err)
-      setError('Failed to submit report. Please try again.')
-      toast.error('Submission Failed', 'Could not submit your report')
+      setError(t('report.error.submitFailed', 'Failed to submit report. Please try again.'))
+      toast.error(
+        t('report.error.submissionFailed', 'Submission Failed'),
+        t('report.error.couldNotSubmit', 'Could not submit your report')
+      )
     } finally {
       setSubmitting(false)
     }
@@ -241,7 +252,7 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                   {t('report.category', 'Category')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {categories.map((cat) => {
+                  {categoryConfig.map((cat) => {
                     const Icon = cat.icon
                     return (
                       <button
@@ -255,7 +266,7 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                       >
                         <Icon className={`h-5 w-5 ${category === cat.value ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`} />
                         <span className={`text-xs font-medium ${category === cat.value ? 'text-red-700 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                          {cat.label}
+                          {t(cat.labelKey)}
                         </span>
                       </button>
                     )
@@ -283,7 +294,7 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                   {t('report.priority', 'Priority')}
                 </label>
                 <div className="flex gap-2">
-                  {priorities.map((p) => (
+                  {priorityConfig.map((p) => (
                     <button
                       key={p.value}
                       onClick={() => setPriority(p.value)}
@@ -291,7 +302,7 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                         priority === p.value ? p.color : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                       }`}
                     >
-                      {p.label}
+                      {t(p.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -307,7 +318,7 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                   <div className="relative rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <img
                       src={screenshot}
-                      alt="Screenshot preview"
+                      alt={t('report.screenshotPreview', 'Screenshot preview')}
                       className="w-full h-40 object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
@@ -333,7 +344,7 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       {t('report.uploadScreenshot', 'Click to upload a screenshot')}
                     </span>
-                    <span className="text-xs text-gray-400">Max 5MB • PNG, JPG, GIF</span>
+                    <span className="text-xs text-gray-400">{t('report.fileHint', 'Max 5MB • PNG, JPG, GIF')}</span>
                   </button>
                 )}
                 

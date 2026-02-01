@@ -123,7 +123,7 @@ function SettingsSection({
               {isWip && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                   <Construction className="h-3 w-3" />
-                  Coming Soon
+                  {t('common.comingSoon', 'Coming Soon')}
                 </span>
               )}
             </div>

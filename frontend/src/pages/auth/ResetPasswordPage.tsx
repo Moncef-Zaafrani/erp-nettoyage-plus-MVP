@@ -80,10 +80,10 @@ export default function ResetPasswordPage() {
     return (
       <AuthLayout>
         <div className="space-y-6">
-          <Alert type="error" message="Invalid or expired reset link. Please request a new one." />
+          <Alert type="error" message={t('error.invalidResetLink', 'Invalid or expired reset link. Please request a new one.')} />
           <Link to="/forgot-password">
             <Button variant="secondary" fullWidth>
-              Request New Reset Link
+              {t('auth.requestNewLink', 'Request New Reset Link')}
             </Button>
           </Link>
         </div>
@@ -149,7 +149,7 @@ export default function ResetPasswordPage() {
               </div>
               <Input
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('auth.password.placeholder', 'Enter your password')}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value)
@@ -166,7 +166,7 @@ export default function ResetPasswordPage() {
             <Input
               label={t('auth.confirmPassword')}
               type="password"
-              placeholder="••••••••"
+              placeholder={t('auth.password.placeholder', 'Enter your password')}
               value={confirmPassword}
               onChange={(e) => {
                 setConfirmPassword(e.target.value)

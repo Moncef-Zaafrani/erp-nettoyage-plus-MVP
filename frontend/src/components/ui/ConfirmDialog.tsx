@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import { X, AlertTriangle, Info, AlertCircle, HelpCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 type DialogType = 'info' | 'warning' | 'danger' | 'question'
 
@@ -58,11 +59,17 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   type = 'question',
   loading = false,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
+  
+  // Use translation for default button texts
+  const defaultConfirmText = confirmText || t('common.confirm', 'Confirm')
+  const defaultCancelText = cancelText || t('common.cancel', 'Cancel')
+  
   if (!isOpen) return null
 
   const config = dialogConfig[type]
@@ -111,7 +118,7 @@ export function ConfirmDialog({
             disabled={loading}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors"
           >
-            {cancelText}
+            {defaultCancelText}
           </button>
           <button
             onClick={handleConfirm}
@@ -124,10 +131,10 @@ export function ConfirmDialog({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Processing...
+                {t('common.processing', 'Processing...')}
               </span>
             ) : (
-              confirmText
+              defaultConfirmText
             )}
           </button>
         </div>

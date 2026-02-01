@@ -53,7 +53,7 @@ function ProfileHeader({
           )}
           <button
             className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 opacity-50 cursor-not-allowed"
-            title="Coming soon"
+            title={t('profile.photoChangeComingSoon', 'Coming soon')}
           >
             <Camera className="h-4 w-4" />
           </button>
@@ -104,7 +104,7 @@ function SectionCard({
           {isWip && (
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
               <Construction className="h-3 w-3" />
-              Coming Soon
+              {t('common.comingSoon', 'Coming Soon')}
             </span>
           )}
         </div>
@@ -161,8 +161,8 @@ export default function ProfilePage() {
         <div className="flex items-center gap-3">
           <Construction className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           <div>
-            <p className="font-medium text-amber-800 dark:text-amber-200">Profile editing is coming soon</p>
-            <p className="text-sm text-amber-600 dark:text-amber-400">You can view your profile information below. Editing features will be available in a future update.</p>
+            <p className="font-medium text-amber-800 dark:text-amber-200">{t('profile.editComingSoon', 'Profile editing is coming soon')}</p>
+            <p className="text-sm text-amber-600 dark:text-amber-400">{t('profile.editComingSoonDesc', 'You can view your profile information below. Editing features will be available in a future update.')}</p>
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@ export default function ProfilePage() {
           />
           <div className="sm:col-span-2">
             <DisplayField
-              label="Email"
+              label={t('profile.fields.email', 'Email')}
               value={user.email}
             />
           </div>
