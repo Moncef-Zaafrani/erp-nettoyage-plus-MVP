@@ -194,4 +194,32 @@ export class ClientsController {
   ) {
     return this.clientsService.batchSendVerification(batchDto, user.id, ip);
   }
+
+  /**
+   * POST /api/clients/:id/verify-email
+   * Admin-initiated direct email verification for client's linked user account
+   */
+  @Post(':id/verify-email')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async verifyEmail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.clientsService.verifyClientEmail(id, user.id, ip);
+  }
+
+  /**
+   * POST /api/clients/batch/verify-email
+   * Batch verify emails directly for clients with linked user accounts
+   */
+  @Post('batch/verify-email')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async batchVerifyEmail(
+    @Body() batchDto: BatchIdsDto,
+    @CurrentUser() user: User,
+    @Ip() ip: string,
+  ) {
+    return this.clientsService.batchVerifyEmail(batchDto, user.id, ip);
+  }
 }

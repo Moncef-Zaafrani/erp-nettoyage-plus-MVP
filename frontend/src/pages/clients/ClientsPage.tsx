@@ -506,6 +506,24 @@ export function ClientsPage() {
                 onEdit={(c) => navigate(`/clients/${c.id}/edit`)}
                 onViewDetails={(c) => navigate(`/clients/view/${c.id}`)}
                 onViewContracts={(c) => navigate(`/clients/view/${c.id}`)}
+                onResetPassword={async (c) => {
+                  if (!c.userId) return
+                  try {
+                    await clientsApi.resetPassword(c.id)
+                    // TODO: Show success toast
+                  } catch (err) {
+                    console.error('Failed to reset password:', err)
+                  }
+                }}
+                onVerifyEmail={async (c) => {
+                  if (!c.userId) return
+                  try {
+                    await clientsApi.verifyEmail(c.id)
+                    fetchClients()
+                  } catch (err) {
+                    console.error('Failed to verify email:', err)
+                  }
+                }}
                 onArchive={async (c) => {
                   try {
                     await clientsApi.archive(c.id)

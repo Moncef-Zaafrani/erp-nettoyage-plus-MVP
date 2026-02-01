@@ -211,6 +211,7 @@ export class ClientsService {
     const client = await this.clientRepository.findOne({
       where: { id },
       withDeleted: includeDeleted,
+      relations: ['user'],
     });
 
     if (!client) {
@@ -245,6 +246,9 @@ export class ClientsService {
     } = searchDto;
 
     const queryBuilder = this.clientRepository.createQueryBuilder('client');
+
+    // Load user relation for email verification status
+    queryBuilder.leftJoinAndSelect('client.user', 'user');
 
     // Include deleted if requested
     if (includeDeleted) {
@@ -546,5 +550,59 @@ export class ClientsService {
       `Batch send verification: ${sent.length} succeeded, ${errors.length} failed`,
     );
     return { sent, errors };
+  }
+
+  /**
+   * Verify client email directly (admin action)
+   * Marks the linked user's email as verified without sending a verification email
+   */
+  async verifyClientEmail(
+    clientId: string,
+    adminUserId: string,
+    ip: string,
+  ): Promise<{ message: string }> {
+    const client = await this.findById(clientId, true);
+
+    if (!client.userId) {
+      throw new NotFoundException(
+        'This client does not have a linked user account',
+      );
+    }
+
+    // Use the users service to verify email directly
+    return this.usersService.verifyEmailDirectly(
+      client.userId,
+      adminUserId,
+      ip,
+    );
+  }
+
+  /**
+   * Batch verify emails directly for clients with linked user accounts
+   */
+  async batchVerifyEmail(
+    batchDto: BatchIdsDto,
+    adminUserId: string,
+    ip: string,
+  ): Promise<{ verified: string[]; errors: Array<{ id: string; error: string }> }> {
+    const verified: string[] = [];
+    const errors: Array<{ id: string; error: string }> = [];
+
+    for (const id of batchDto.ids) {
+      try {
+        await this.verifyClientEmail(id, adminUserId, ip);
+        verified.push(id);
+      } catch (error) {
+        errors.push({
+          id,
+          error: error.message,
+        });
+      }
+    }
+
+    this.logger.log(
+      `Batch verify email: ${verified.length} succeeded, ${errors.length} failed`,
+    );
+    return { verified, errors };
   }
 }

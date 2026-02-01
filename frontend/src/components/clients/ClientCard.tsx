@@ -16,6 +16,8 @@ import {
   Check,
   Calendar,
   Briefcase,
+  BadgeCheck,
+  KeyRound,
 } from 'lucide-react'
 import { Client, ClientType } from '@/services/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -30,6 +32,8 @@ interface ClientCardProps {
   onViewContracts?: (client: Client) => void
   onArchive?: (client: Client) => void
   onRestore?: (client: Client) => void
+  onResetPassword?: (client: Client) => void
+  onVerifyEmail?: (client: Client) => void
   selectionMode?: boolean
 }
 
@@ -64,6 +68,8 @@ export function ClientCard({
   onViewContracts,
   onArchive,
   onRestore,
+  onResetPassword,
+  onVerifyEmail,
   selectionMode = false,
 }: ClientCardProps) {
   const { t } = useTranslation()
@@ -230,6 +236,36 @@ export function ClientCard({
                   <FileText className="h-4 w-4" />
                   {t('clients.actions.viewContracts', 'View Contracts')}
                 </button>
+
+                {/* Password Reset - only for clients with linked user accounts */}
+                {canEdit && client.userId && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowMenu(false)
+                      onResetPassword?.(client)
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <KeyRound className="h-4 w-4" />
+                    {t('clients.actions.resetPassword', 'Reset Password')}
+                  </button>
+                )}
+
+                {/* Verify Email - only for clients with linked user accounts that are not verified */}
+                {canEdit && client.userId && client.user && !client.user.emailVerified && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowMenu(false)
+                      onVerifyEmail?.(client)
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                  >
+                    <BadgeCheck className="h-4 w-4" />
+                    {t('clients.actions.verifyEmail', 'Verify Email')}
+                  </button>
+                )}
 
                 {selectionMode && (
                   <button

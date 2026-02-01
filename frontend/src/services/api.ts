@@ -1323,6 +1323,12 @@ export interface Client {
   activeContractsCount?: number
   /** Linked user account for client portal login (if any) */
   userId?: string | null
+  /** Linked user object with email verification status */
+  user?: {
+    id: string
+    email: string
+    emailVerified: boolean
+  } | null
   createdAt: string
   updatedAt: string
 }
@@ -1488,6 +1494,25 @@ export const clientsApi = {
    */
   batchSendVerification: async (ids: string[]): Promise<{ sent: string[]; errors: any[] }> => {
     return request<{ sent: string[]; errors: any[] }>('/clients/batch/send-verification', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    })
+  },
+
+  /**
+   * Verify email directly for a client with a linked user account (no email sent)
+   */
+  verifyEmail: async (id: string): Promise<{ message: string }> => {
+    return request<{ message: string }>(`/clients/${id}/verify-email`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * Batch verify emails directly for clients
+   */
+  batchVerifyEmail: async (ids: string[]): Promise<{ verified: string[]; errors: any[] }> => {
+    return request<{ verified: string[]; errors: any[] }>('/clients/batch/verify-email', {
       method: 'POST',
       body: JSON.stringify({ ids }),
     })
