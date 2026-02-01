@@ -216,8 +216,16 @@ export function useUserFilterSections() {
       options: [
         { value: 'ACTIVE', label: t('users.status.active', 'Active') },
         { value: 'INACTIVE', label: t('users.status.inactive', 'Inactive') },
-        { value: 'PENDING', label: t('users.status.pending', 'Pending Verification') },
-        { value: 'ARCHIVED', label: t('users.status.archived', 'Archived') },
+        { value: 'ARCHIVED', label: t('users.status.deactivated', 'Deactivated') },
+      ],
+    },
+    {
+      id: 'emailVerified',
+      label: t('users.filters.emailVerified', 'Email Verification'),
+      multiSelect: false,
+      options: [
+        { value: 'verified', label: t('users.status.verified', 'Verified') },
+        { value: 'pending', label: t('users.status.pending', 'Pending Verification') },
       ],
     },
     {
@@ -232,7 +240,7 @@ export function useUserFilterSections() {
     },
     {
       id: 'lastOnline',
-      label: t('users.filters.lastOnline', 'Last Online'),
+      label: t('users.filters.lastOnline', 'Last Connected'),
       multiSelect: false,
       options: [
         { value: 'today', label: t('users.filters.today', 'Today') },

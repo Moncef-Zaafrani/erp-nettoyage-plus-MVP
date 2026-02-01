@@ -1074,7 +1074,7 @@ export interface UsersSearchParams {
   limit?: number
   sortBy?: string
   sortOrder?: 'ASC' | 'DESC'
-  includeArchived?: boolean
+  includeDeleted?: boolean
 }
 
 export interface PaginatedUsers {
@@ -1175,20 +1175,22 @@ export const usersApi = {
   },
 
   /**
-   * Soft delete (archive) a user
+   * Deactivate a user (set status to ARCHIVED - user remains visible but deactivated)
    */
-  archive: async (id: string): Promise<{ success: boolean }> => {
-    return request<{ success: boolean }>(`/users/${id}`, {
-      method: 'DELETE',
+  archive: async (id: string): Promise<User> => {
+    return request<User>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'ARCHIVED' }),
     })
   },
 
   /**
-   * Restore an archived user
+   * Reactivate an archived/deactivated user (set status back to ACTIVE)
    */
   restore: async (id: string): Promise<User> => {
-    return request<User>(`/users/${id}/restore`, {
-      method: 'POST',
+    return request<User>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'ACTIVE' }),
     })
   },
 
@@ -1203,23 +1205,27 @@ export const usersApi = {
   },
 
   /**
-   * Batch activate users
+   * Batch activate users (set status to ACTIVE)
    */
   batchActivate: async (ids: string[]): Promise<{ success: boolean; count: number }> => {
-    return request<{ success: boolean; count: number }>('/users/batch/activate', {
-      method: 'POST',
-      body: JSON.stringify({ ids }),
-    })
+    // Use batch update to set status to ACTIVE
+    const users = ids.map(id => ({ id, status: 'ACTIVE' as const }))
+    return request<{ success: boolean; count: number }>('/users/batch/update', {
+      method: 'PATCH',
+      body: JSON.stringify({ users }),
+    }).then(() => ({ success: true, count: ids.length }))
   },
 
   /**
-   * Batch deactivate (archive) users
+   * Batch deactivate users (set status to ARCHIVED)
    */
   batchDeactivate: async (ids: string[]): Promise<{ success: boolean; count: number }> => {
-    return request<{ success: boolean; count: number }>('/users/batch/deactivate', {
-      method: 'POST',
-      body: JSON.stringify({ ids }),
-    })
+    // Use batch update to set status to ARCHIVED
+    const users = ids.map(id => ({ id, status: 'ARCHIVED' as const }))
+    return request<{ success: boolean; count: number }>('/users/batch/update', {
+      method: 'PATCH',
+      body: JSON.stringify({ users }),
+    }).then(() => ({ success: true, count: ids.length }))
   },
 
   /**

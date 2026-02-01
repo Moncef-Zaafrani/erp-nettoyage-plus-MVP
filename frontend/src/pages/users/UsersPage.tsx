@@ -71,6 +71,7 @@ export function UsersPage() {
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({
     status: [], // Start with no filter - show all users
     role: [],
+    emailVerified: [],
     lastOnline: [],
   })
   
@@ -138,9 +139,8 @@ export function UsersPage() {
       const tabConfig = roleTabs.find(t => t.id === currentRoleTab)
       const currentRoleFilter = tabConfig?.roles || activeFilters.role
 
-      // Build status filter (handle "PENDING" as emailVerified = false)
-      const statusFilter = activeFilters.status.filter(s => s !== 'PENDING')
-      const isPendingFilter = activeFilters.status.includes('PENDING')
+      // Build status filter
+      const statusFilter = activeFilters.status || []
 
       // Backend only accepts single values for role/status, so send first value only
       // For multi-select, we'll filter client-side
@@ -155,6 +155,7 @@ export function UsersPage() {
         zoneId: activeFilters.zone?.length ? activeFilters.zone[0] : undefined,
         sortBy,
         sortOrder: sortDirection.toUpperCase() as 'ASC' | 'DESC',
+        includeDeleted: true, // Include archived/deactivated users
       })
 
       let filteredUsers = response.data || []
@@ -172,10 +173,44 @@ export function UsersPage() {
         filteredUsers = filteredUsers.filter(u => statusFilter.includes(u.status))
       }
       
-      // Client-side filter for pending (emailVerified = false)
-      if (isPendingFilter && statusFilter.length === 0) {
-        filteredUsers = filteredUsers.filter(u => !u.emailVerified)
+      // Client-side filter for email verification
+      const emailVerifiedFilter = activeFilters.emailVerified?.[0]
+      if (emailVerifiedFilter === 'verified') {
+        filteredUsers = filteredUsers.filter(u => u.emailVerified === true)
+      } else if (emailVerifiedFilter === 'pending') {
+        filteredUsers = filteredUsers.filter(u => u.emailVerified === false)
       }
+      
+      // Client-side filter for lastOnline/lastConnected
+      const lastOnlineFilter = activeFilters.lastOnline?.[0]
+      if (lastOnlineFilter) {
+        const now = new Date()
+        filteredUsers = filteredUsers.filter(u => {
+          if (!u.lastLoginAt) return lastOnlineFilter === 'inactive' // Users who never logged in are "inactive"
+          const lastLogin = new Date(u.lastLoginAt)
+          const daysSinceLogin = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24))
+          
+          switch (lastOnlineFilter) {
+            case 'today':
+              return daysSinceLogin === 0
+            case 'week':
+              return daysSinceLogin <= 7
+            case 'month':
+              return daysSinceLogin <= 30
+            case 'inactive':
+              return daysSinceLogin > 30 || !u.lastLoginAt
+            default:
+              return true
+          }
+        })
+      }
+
+      // Sort deactivated (ARCHIVED) users to the bottom
+      filteredUsers.sort((a, b) => {
+        if (a.status === 'ARCHIVED' && b.status !== 'ARCHIVED') return 1
+        if (a.status !== 'ARCHIVED' && b.status === 'ARCHIVED') return -1
+        return 0
+      })
 
       setUsers(filteredUsers)
       setTotalCount(response.total || filteredUsers.length)

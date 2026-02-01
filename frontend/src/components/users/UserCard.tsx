@@ -46,7 +46,7 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
   ACTIVE: { label: 'users.status.active', color: 'text-green-700 dark:text-green-300', bgColor: 'bg-green-100 dark:bg-green-900/50' },
   INACTIVE: { label: 'users.status.inactive', color: 'text-gray-700 dark:text-gray-300', bgColor: 'bg-gray-100 dark:bg-gray-700' },
   PENDING: { label: 'users.status.pending', color: 'text-amber-700 dark:text-amber-300', bgColor: 'bg-amber-100 dark:bg-amber-900/50' },
-  ARCHIVED: { label: 'users.status.archived', color: 'text-red-700 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-900/50' },
+  ARCHIVED: { label: 'users.status.deactivated', color: 'text-red-700 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-900/50' },
 }
 
 // Format relative time
@@ -165,14 +165,23 @@ export function UserCard({
       className={`relative rounded-xl border-2 transition-all cursor-pointer shadow-sm ${
         isSelected
           ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 ring-2 ring-emerald-500/30'
-          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
+          : user.status === 'ARCHIVED'
+            ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 opacity-75 hover:opacity-100 hover:border-gray-400 dark:hover:border-gray-500'
+            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
       }`}
     >
+      {/* Deactivated Indicator Banner */}
+      {user.status === 'ARCHIVED' && (
+        <div className="absolute top-0 left-0 right-0 bg-gray-500 dark:bg-gray-600 text-white text-xs font-medium text-center py-0.5 rounded-t-lg">
+          {t('users.status.deactivated', 'Deactivated')}
+        </div>
+      )}
+      
       {/* Selection Checkbox */}
       {selectionMode && (
         <div
           onClick={handleCheckboxClick}
-          className={`absolute top-3 left-3 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
+          className={`absolute ${user.status === 'ARCHIVED' ? 'top-8' : 'top-3'} left-3 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
             isSelected
               ? 'bg-emerald-500 border-emerald-500'
               : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500 hover:border-emerald-500'
@@ -183,7 +192,7 @@ export function UserCard({
       )}
 
       {/* Header with Avatar and Menu */}
-      <div className="p-4 pb-3">
+      <div className={`p-4 pb-3 ${user.status === 'ARCHIVED' ? 'pt-8' : ''}`}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Avatar */}
