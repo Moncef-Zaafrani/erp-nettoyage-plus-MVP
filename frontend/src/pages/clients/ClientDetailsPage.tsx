@@ -44,11 +44,11 @@ const typeBadges = {
   MULTI_SITE: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', icon: Globe },
 }
 
-// Status badge configuration
+// Status badge configuration (lifecycle: PROSPECT → CURRENT → FORMER → ARCHIVED)
 const statusBadges = {
   PROSPECT: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300', icon: AlertCircle },
-  ACTIVE: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', icon: CheckCircle },
-  INACTIVE: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-700 dark:text-gray-300', icon: XCircle },
+  CURRENT: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', icon: CheckCircle },
+  FORMER: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', icon: XCircle },
   ARCHIVED: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300', icon: Archive },
 }
 
@@ -185,7 +185,7 @@ export function ClientDetailsPage() {
   }
   
   const typeConfig = typeBadges[client.type as keyof typeof typeBadges] || typeBadges.COMPANY
-  const statusConfig = statusBadges[client.status as keyof typeof statusBadges] || statusBadges.INACTIVE
+  const statusConfig = statusBadges[client.status as keyof typeof statusBadges] || statusBadges.PROSPECT
   const TypeIcon = typeConfig.icon
   const StatusIcon = statusConfig.icon
   

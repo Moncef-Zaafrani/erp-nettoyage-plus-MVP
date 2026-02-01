@@ -1302,7 +1302,7 @@ export const usersApi = {
 // ============================================
 
 export type ClientType = 'INDIVIDUAL' | 'COMPANY' | 'MULTI_SITE'
-export type ClientStatus = 'PROSPECT' | 'CURRENT' | 'ARCHIVED'
+export type ClientStatus = 'PROSPECT' | 'CURRENT' | 'FORMER' | 'ARCHIVED'
 
 export interface Client {
   id: string

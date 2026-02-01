@@ -40,15 +40,6 @@ export enum UserStatus {
 }
 
 /**
- * @deprecated Use UserStatus instead. Kept for backwards compatibility during migration.
- */
-export enum ClientStatus {
-  CURRENT = 'CURRENT',
-  FORMER = 'FORMER',
-  ARCHIVED = 'ARCHIVED',
-}
-
-/**
  * Employee attendance status (for real-time tracking)
  * Used by Superviseurs to update agent shift status
  */

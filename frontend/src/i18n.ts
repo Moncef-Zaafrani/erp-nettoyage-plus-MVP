@@ -792,6 +792,7 @@ const resources = {
       // Clients - Status
       'clients.status.current': 'Current',
       'clients.status.prospect': 'Prospect',
+      'clients.status.former': 'Former',
       'clients.status.archived': 'Archived',
       // Clients - Type
       'clients.type.company': 'Company',
@@ -848,6 +849,7 @@ const resources = {
       // Clients - Status (additional)
       'clients.status.PROSPECT': 'Prospect',
       'clients.status.CURRENT': 'Current',
+      'clients.status.FORMER': 'Former',
       'clients.status.ARCHIVED': 'Archived',
       // Clients - Details Page
       'clients.details.back': 'Back to Clients',
@@ -2330,6 +2332,7 @@ const resources = {
       // Clients - Status
       'clients.status.current': 'Actuel',
       'clients.status.prospect': 'Prospect',
+      'clients.status.former': 'Ancien',
       'clients.status.archived': 'Archivé',
       // Clients - Type
       'clients.type.company': 'Entreprise',
@@ -2386,6 +2389,7 @@ const resources = {
       // Clients - Status (additional)
       'clients.status.PROSPECT': 'Prospect',
       'clients.status.CURRENT': 'Actuel',
+      'clients.status.FORMER': 'Ancien',
       'clients.status.ARCHIVED': 'Archivé',
       // Clients - Details Page
       'clients.details.back': 'Retour aux clients',

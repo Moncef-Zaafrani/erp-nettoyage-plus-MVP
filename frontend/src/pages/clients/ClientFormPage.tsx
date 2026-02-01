@@ -20,10 +20,11 @@ const typeOptions: { value: ClientType; labelKey: string; icon: React.ElementTyp
   { value: 'MULTI_SITE', labelKey: 'clients.types.MULTI_SITE', icon: Globe },
 ]
 
-// Status options
+// Status options (lifecycle: PROSPECT → CURRENT → FORMER → ARCHIVED)
 const statusOptions = [
   { value: 'PROSPECT', labelKey: 'clients.status.PROSPECT' },
   { value: 'CURRENT', labelKey: 'clients.status.CURRENT' },
+  { value: 'FORMER', labelKey: 'clients.status.FORMER' },
 ]
 
 export function ClientFormPage() {

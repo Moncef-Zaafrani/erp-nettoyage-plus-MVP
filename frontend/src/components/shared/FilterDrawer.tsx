@@ -263,8 +263,9 @@ export function useClientFilterSections() {
       id: 'status',
       label: t('clients.filters.status', 'Status'),
       options: [
-        { value: 'CURRENT', label: t('clients.status.current', 'Current') },
         { value: 'PROSPECT', label: t('clients.status.prospect', 'Prospect') },
+        { value: 'CURRENT', label: t('clients.status.current', 'Current') },
+        { value: 'FORMER', label: t('clients.status.former', 'Former') },
         { value: 'ARCHIVED', label: t('clients.status.archived', 'Archived') },
       ],
     },
